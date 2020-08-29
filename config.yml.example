@@ -1,0 +1,16 @@
+app:
+  bind: ":18080"
+  frontend:
+    - http://localhost:3000
+    - http://localhost
+  adminpassword: "changeme"
+mail:
+  host: "smtp.mailtrap.io"
+  port: 587
+  username: "username"
+  password: "password"
+  allowInsecure: false
+  from: ""
+database:
+  type: sqlite3
+  path: ./test.db
