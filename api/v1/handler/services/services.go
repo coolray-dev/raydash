@@ -101,8 +101,8 @@ func Index(c *gin.Context) {
 			}
 			services[i].Protocol = "vmess"
 			services[i].Host = node.Host
-			services[i].Port = node.Port
-			services[i].VmessSetting = node.VmessSetting
+			services[i].Port = node.Settings.Port
+			services[i].VmessSetting = node.Settings.VmessSetting
 			services[i].VmessUser = model.VmessUser{
 				Email:    user.Email,
 				UUID:     user.UUID,
@@ -180,8 +180,8 @@ func Store(c *gin.Context) {
 		}
 		service.Protocol = "vmess"
 		service.Host = node.Host
-		service.Port = node.Port
-		service.VmessSetting = node.VmessSetting
+		service.Port = node.Settings.Port
+		service.VmessSetting = node.Settings.VmessSetting
 		service.VmessUser = model.VmessUser{
 			Email:    user.Email,
 			UUID:     user.UUID,

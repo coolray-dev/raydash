@@ -37,6 +37,14 @@ func Index(c *gin.Context) {
 		nodes = &t
 	}
 
+	// Check Admin
+	// Show Access Token if isAdmin
+	if isAdmin := c.MustGet("isAdmin").(bool); !isAdmin {
+		for i := range *nodes {
+			(*nodes)[i].AccessToken = ""
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"total": len(*nodes),
 		"nodes": nodes,

@@ -9,17 +9,17 @@ type Node struct {
 	Services       []*Service `json:"-"`
 	Host           string     `json:"host"` // The Host to access v2ray
 	Ports          string     `json:"ports"`
-	AccessToken    string     `json:"access_token"`
+	AccessToken    string     `json:"access_token,omitempty"`
 	CurrentTraffic uint64     `json:"current_traffic"`
 	MaxTraffic     uint64     `json:"max_traffic"`
 	HasUDP         bool       `json:"hasUDP"`
 	HasMultiPort   bool       `json:"hasMultiPort"`
-	Settings       `json:"settings"`
+	Settings       settings   `json:"settings"`
 }
 
-type Settings struct {
-	Listen             string `json:"listen"`
-	Port               uint   `json:"port"`
-	VmessSetting       `json:"vmessSettings"`
-	ShadowsocksSetting `json:"shadowsocksSettings"`
+type settings struct {
+	Listen             string             `json:"listen"`
+	Port               uint               `json:"port"`
+	VmessSetting       VmessSetting       `json:"vmessSettings"`
+	ShadowsocksSetting ShadowsocksSetting `json:"shadowsocksSettings"`
 }
