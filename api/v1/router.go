@@ -14,7 +14,7 @@ import (
 )
 
 // SetupRouter config router routes and middlewares
-func SetupRouter(router *gin.Engine, c *cors.Config) {
+func SetupRouter(router *gin.RouterGroup, c *cors.Config) {
 
 	// Middleware must be registered before routes initial
 	// Otherwise middlewares will not be used
@@ -31,7 +31,7 @@ func SetupRouter(router *gin.Engine, c *cors.Config) {
 }
 
 // SetupRoutes initialized a gin router to route request
-func setupRoutes(router *gin.Engine) {
+func setupRoutes(router *gin.RouterGroup) {
 
 	usersAPI := router.Group("/users", middleware.AuthNodeToken())
 	{
