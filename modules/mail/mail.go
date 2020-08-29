@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coolray-dev/raydash/api/models"
+	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"gopkg.in/gomail.v2"
 )

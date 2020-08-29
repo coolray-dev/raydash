@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"sync"
 
-	orm "github.com/coolray-dev/raydash/api/database"
-	"github.com/coolray-dev/raydash/api/models"
-	apiRouter "github.com/coolray-dev/raydash/api/router"
+	v1 "github.com/coolray-dev/raydash/api/v1"
+	orm "github.com/coolray-dev/raydash/database"
+	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/coolray-dev/raydash/modules/mail"
 	"github.com/coolray-dev/raydash/modules/setting"
@@ -52,7 +52,7 @@ func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = setting.Config.GetStringSlice("app.frontend")
 
-	apiRouter.SetupRouter(router, &corsConfig)
+	v1.SetupRouter(router, &corsConfig)
 
 	// Get bind address from config and setup server
 	bindAddr := setting.Config.GetString("app.bind")
