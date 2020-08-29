@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v5"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/testutils"
 	"github.com/coolray-dev/raydash/modules/utils"
-	"github.com/brianvoe/gofakeit/v5"
 	"github.com/google/uuid"
 	assertlib "github.com/stretchr/testify/assert"
 )
@@ -90,7 +90,7 @@ func TestRegister(t *testing.T) {
 			bodyjson, _ := json.Marshal(body)
 
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer([]byte(bodyjson)))
+			req, _ := http.NewRequest("POST", "/v1/register", bytes.NewBuffer([]byte(bodyjson)))
 
 			router.ServeHTTP(w, req)
 

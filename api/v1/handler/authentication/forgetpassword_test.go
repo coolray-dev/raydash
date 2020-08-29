@@ -8,13 +8,13 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v5"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/coolray-dev/raydash/modules/mail"
 	"github.com/coolray-dev/raydash/modules/setting"
 	"github.com/coolray-dev/raydash/modules/testutils"
-	"github.com/brianvoe/gofakeit/v5"
 	assertlib "github.com/stretchr/testify/assert"
 )
 
@@ -68,7 +68,7 @@ func TestForgetpassword(t *testing.T) {
 			bodyjson, _ := json.Marshal(body)
 
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", "/password/forget", bytes.NewBuffer([]byte(bodyjson)))
+			req, _ := http.NewRequest("POST", "/v1/password/forget", bytes.NewBuffer([]byte(bodyjson)))
 
 			router.ServeHTTP(w, req)
 

@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v5"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/testutils"
-	"github.com/brianvoe/gofakeit/v5"
 	assertlib "github.com/stretchr/testify/assert"
 )
 
@@ -45,7 +45,7 @@ func TestIndex(t *testing.T) {
 			assert := assertlib.New(t)
 
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", "/announcements", nil)
+			req, _ := http.NewRequest("GET", "/v1/announcements", nil)
 
 			if c.Token != "" {
 				req.Header.Add("Authorization", "Bearer "+c.Token)

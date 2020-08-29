@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v5"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/setting"
 	"github.com/coolray-dev/raydash/modules/testutils"
-	"github.com/brianvoe/gofakeit/v5"
 	assertlib "github.com/stretchr/testify/assert"
 )
 
@@ -46,7 +46,7 @@ func TestLogin(t *testing.T) {
 			}
 			bodyjson, _ := json.Marshal(body)
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer([]byte(bodyjson)))
+			req, _ := http.NewRequest("POST", "/v1/login", bytes.NewBuffer([]byte(bodyjson)))
 			router.ServeHTTP(w, req)
 			var response map[string]string
 			err := json.Unmarshal([]byte(w.Body.String()), &response)
@@ -129,7 +129,7 @@ func TestLogout(t *testing.T) {
 			bodyjson, _ := json.Marshal(body)
 
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("DELETE", "/logout", bytes.NewBuffer([]byte(bodyjson)))
+			req, _ := http.NewRequest("DELETE", "/v1/logout", bytes.NewBuffer([]byte(bodyjson)))
 
 			if c.AuthToken != "" {
 				req.Header.Add("Authorization", "Bearer "+c.AuthToken)
