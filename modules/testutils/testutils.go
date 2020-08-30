@@ -3,11 +3,11 @@ package testutils
 import (
 	"database/sql"
 
-	orm "github.com/coolray-dev/raydash/api/database"
-	"github.com/coolray-dev/raydash/api/models"
-	apiRouter "github.com/coolray-dev/raydash/api/router"
-	"github.com/coolray-dev/raydash/modules/setting"
 	"github.com/brianvoe/gofakeit/v5"
+	v1 "github.com/coolray-dev/raydash/api/v1"
+	orm "github.com/coolray-dev/raydash/database"
+	"github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/modules/setting"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -69,6 +69,6 @@ func GetRouter() *gin.Engine {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = setting.Config.GetStringSlice("app.frontend")
 
-	apiRouter.SetupRouter(router, &corsConfig)
+	v1.SetupRouter(router.Group("/v1"), &corsConfig)
 	return router
 }

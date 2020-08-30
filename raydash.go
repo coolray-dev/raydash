@@ -1,15 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 
-	orm "github.com/coolray-dev/raydash/api/database"
-	"github.com/coolray-dev/raydash/api/models"
-	apiRouter "github.com/coolray-dev/raydash/api/router"
+	v1 "github.com/coolray-dev/raydash/api/v1"
+	orm "github.com/coolray-dev/raydash/database"
+	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/coolray-dev/raydash/modules/mail"
 	"github.com/coolray-dev/raydash/modules/setting"
@@ -52,7 +54,7 @@ func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = setting.Config.GetStringSlice("app.frontend")
 
-	apiRouter.SetupRouter(router, &corsConfig)
+	v1.SetupRouter(router.Group("/v1"), &corsConfig)
 
 	// Get bind address from config and setup server
 	bindAddr := setting.Config.GetString("app.bind")
@@ -63,35 +65,34 @@ func main() {
 
 	// Create channel to catch system signal
 	sigs := make(chan os.Signal)
-	signal.Notify(sigs, os.Interrupt)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	// Monitor signal from channel sigs
 	go func() {
+		wg.Add(1)
 		sig := <-sigs
 
 		// Do graceful shutdown
-		fmt.Println("Received signal", sig)
-		fmt.Println("Shutting Down")
-		fmt.Print("Stopping MailWorker...")
+		log.Log.Infof("Received signal %s", sig)
+		log.Log.Info("Shutting Down")
+		log.Log.Info("Stopping MailWorker")
 		mailWorker.Stop()
-		fmt.Println("Done")
-		fmt.Print("Stopping Gin...")
-		if err := server.Close(); err != nil {
-			log.Log.Error("Server Close:", err)
+		log.Log.Info("Stopping Gin")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			log.Log.Errorf("Server Close With Error: %s", err.Error())
 		}
-		fmt.Println("Done")
+		wg.Done()
 	}()
 
-	if err := server.ListenAndServe(); err != nil {
-		if err == http.ErrServerClosed {
-			log.Log.Info("HTTP Server closed")
-		} else {
-			log.Log.WithError(err).Fatal("HTTP Server closed unexpect")
-		}
+	if err := server.ListenAndServe(); err != http.ErrServerClosed && err != nil {
+		log.Log.WithError(err).Fatal("HTTP Server Listen Error")
 	}
 
 	// wait for all goroutine to exit
 	wg.Wait()
+	log.Log.Info("RayDash Shutdown Success")
 	return
 }
 

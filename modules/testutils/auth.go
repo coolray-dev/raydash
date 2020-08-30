@@ -1,8 +1,8 @@
 package testutils
 
 import (
-	"github.com/coolray-dev/raydash/api/models"
-	"github.com/coolray-dev/raydash/api/v1/authentication"
+	"github.com/coolray-dev/raydash/api/v1/handler/authentication"
+	"github.com/coolray-dev/raydash/models"
 )
 
 func SignAccessToken(user *models.User) string {
