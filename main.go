@@ -70,7 +70,7 @@ func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = setting.Config.GetStringSlice("app.frontend")
 
-	v1.SetupRouter(router.Group("/v1"), &corsConfig)
+	v1.SetupRouter(router, &corsConfig)
 
 	// Swagger UI
 	router.GET("/v1/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
