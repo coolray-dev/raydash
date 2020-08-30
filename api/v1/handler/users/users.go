@@ -11,6 +11,18 @@ import (
 
 // Index handle GET /users which simply list out all users
 // accept gid param as filter
+// Index godoc
+// @Summary Simply list out all users
+// @Description Simply list out all users
+// @ID users.Index
+// @Accept  json
+// @Produce  json
+// @Param gid query int false "Group ID"
+// @Success 200 {object} []models.User
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Router /users [get]
 func Index(c *gin.Context) {
 	var u []model.User
 	users := &u
