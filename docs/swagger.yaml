@@ -1,0 +1,73 @@
+basePath: /v1
+definitions:
+  models.Group:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      groupname:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      current_traffic:
+        type: integer
+      email:
+        type: string
+      groups:
+        items:
+          $ref: '#/definitions/models.Group'
+        type: array
+      id:
+        type: integer
+      max_traffic:
+        type: integer
+      subscription_token:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
+info:
+  contact: {}
+  license:
+    name: GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+  title: RayDash API
+  version: "1.0"
+paths:
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Simply list out all users
+      operationId: users.Index
+      parameters:
+      - description: Group ID
+        in: query
+        name: gid
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400": {}
+        "404": {}
+        "500": {}
+      summary: Simply list out all users
+swagger: "2.0"
