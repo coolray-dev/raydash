@@ -22,7 +22,7 @@ type User struct {
 	SubscriptionToken string               `json:"subscription_token"`
 	CurrentTraffic    int64                `json:"current_traffic"`
 	MaxTraffic        int64                `json:"max_traffic"`
-	Groups            []*Group             `gorm:"many2many:groups_users;" json:"groups" fake:"skip"`
+	Groups            []*Group             `gorm:"many2many:groups_users;" json:"-" fake:"skip"`
 }
 
 // GetJwtKey provide access to private var jwtKey, if jwtKey is nil then generate it

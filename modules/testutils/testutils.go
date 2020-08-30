@@ -69,6 +69,6 @@ func GetRouter() *gin.Engine {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = setting.Config.GetStringSlice("app.frontend")
 
-	v1.SetupRouter(router.Group("/v1"), &corsConfig)
+	v1.SetupRouter(router, &corsConfig)
 	return router
 }

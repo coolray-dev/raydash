@@ -1,5 +1,10 @@
 basePath: /v1
 definitions:
+  handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   models.Group:
     properties:
       created_at:
@@ -13,6 +18,70 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.Node:
+    properties:
+      access_token:
+        type: string
+      created_at:
+        type: string
+      current_traffic:
+        type: integer
+      description:
+        type: string
+      hasMultiPort:
+        type: boolean
+      hasUDP:
+        type: boolean
+      host:
+        description: The Host to access v2ray
+        type: string
+      id:
+        type: integer
+      max_traffic:
+        type: integer
+      name:
+        type: string
+      ports:
+        type: string
+      settings:
+        $ref: '#/definitions/models.settings'
+        type: object
+      updated_at:
+        type: string
+    type: object
+  models.Service:
+    properties:
+      alterid:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      host:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      nid:
+        type: integer
+      port:
+        type: integer
+      protocol:
+        type: string
+      security:
+        type: string
+      uid:
+        type: integer
+      updated_at:
+        type: string
+      uuid:
+        type: string
+    type: object
+  models.ShadowsocksSetting:
+    type: object
   models.User:
     properties:
       created_at:
@@ -21,10 +90,6 @@ definitions:
         type: integer
       email:
         type: string
-      groups:
-        items:
-          $ref: '#/definitions/models.Group'
-        type: array
       id:
         type: integer
       max_traffic:
@@ -38,8 +103,75 @@ definitions:
       uuid:
         type: string
     type: object
+  models.VmessSetting:
+    properties:
+      protocol:
+        type: string
+    type: object
+  models.settings:
+    properties:
+      listen:
+        type: string
+      port:
+        type: integer
+      shadowsocksSettings:
+        $ref: '#/definitions/models.ShadowsocksSetting'
+        type: object
+      vmessSettings:
+        $ref: '#/definitions/models.VmessSetting'
+        type: object
+    type: object
+  users.destroyResponse:
+    properties:
+      user:
+        type: string
+    type: object
+  users.groupsResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/models.Group'
+        type: array
+    type: object
+  users.indexResponse:
+    properties:
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
+  users.nodesResponse:
+    properties:
+      nodes:
+        items:
+          $ref: '#/definitions/models.Node'
+        type: array
+    type: object
+  users.servicesResponse:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+    type: object
+  users.showResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+    type: object
+  users.updateResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+    type: object
+host: localhost
 info:
   contact: {}
+  description: A Swagger UI For RayDash API
   license:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.html
@@ -57,17 +189,210 @@ paths:
         in: query
         name: gid
         type: integer
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
-        "400": {}
-        "404": {}
-        "500": {}
-      summary: Simply list out all users
+            $ref: '#/definitions/users.indexResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: All Users
+      tags:
+      - Users
+  /users/{username}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user according to username
+      operationId: users.Destroy
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.destroyResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Return user according to username in url
+      operationId: users.Show
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.showResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Show the required user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Update the user provided
+      operationId: users.Update
+      parameters:
+      - description: User Object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.updateResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update user
+      tags:
+      - Users
+  /users/{username}/groups:
+    get:
+      consumes:
+      - application/json
+      description: Return a list of groups of a user
+      operationId: users.Groups
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.groupsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all groups
+      tags:
+      - Users
+  /users/{username}/nodes:
+    get:
+      consumes:
+      - application/json
+      description: Return a list of nodes of a user
+      operationId: users.Nodes
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.nodesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all nodes
+      tags:
+      - Users
+  /users/{username}/services:
+    get:
+      consumes:
+      - application/json
+      description: Return a list of services of a user
+      operationId: users.Services
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.servicesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all services
+      tags:
+      - Users
 swagger: "2.0"

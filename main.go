@@ -1,12 +1,11 @@
 // @title RayDash API
 // @version 1.0
-// @description
-// @termsOfService
+// @description A Swagger UI For RayDash API
 
 // @license.name GPLv3
 // @license.url https://www.gnu.org/licenses/gpl-3.0.html
 
-// @host
+// @host localhost
 // @BasePath /v1
 // @query.collection.format multi
 
