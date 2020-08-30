@@ -74,10 +74,13 @@ func main() {
 	// Swagger UI
 	router.GET("/v1/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Setup Swagger
+	setupSwagger()
+
 	// Get bind address from config and setup server
-	bindAddr := setting.Config.GetString("app.bind")
+	bindAddr := setting.Config.GetString("app.port")
 	server := &http.Server{
-		Addr:    bindAddr,
+		Addr:    ":" + bindAddr,
 		Handler: router,
 	}
 

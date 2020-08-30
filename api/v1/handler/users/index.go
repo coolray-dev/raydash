@@ -27,6 +27,7 @@ type indexResponse struct {
 // @Param gid query uint false "Group ID"
 // @Param Authorization header string false "Node Token"
 // @Success 200 {object} indexResponse
+// @Failure 403 {object} handler.ErrorResponse
 // @Failure 500 {object} handler.ErrorResponse
 // @Router /users [get]
 func Index(c *gin.Context) {
