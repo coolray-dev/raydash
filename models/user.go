@@ -12,16 +12,17 @@ import (
 // User table model
 type User struct {
 	BaseModel
-	UUID           string               `gorm:"unique" json:"uuid" fake:"{uuid}"`
-	Token          map[string]time.Time `json:"-" gorm:"-" fake:"skip"`            // gorm doesn't support complex type so hav to marshal it
-	TokenStr       string               `json:"-" gorm:"column:token" fake:"skip"` // the actual data is stored here
-	JwtKey         []byte               `json:"-" fake:"skip"`                     // Do not export it due to leak risk
-	Email          string               `json:"email" fake:"{email}"`
-	Username       string               `gorm:"unique" json:"username" fake:"{username}"`
-	Password       string               `json:"-" fake:"{password:true,true,true,true,true,8}"`
-	CurrentTraffic int64                `json:"current_traffic"`
-	MaxTraffic     int64                `json:"max_traffic"`
-	Groups         []*Group             `gorm:"many2many:groups_users;" json:"groups" fake:"skip"`
+	UUID              string               `gorm:"unique" json:"uuid" fake:"{uuid}"`
+	Token             map[string]time.Time `json:"-" gorm:"-" fake:"skip"`            // gorm doesn't support complex type so hav to marshal it
+	TokenStr          string               `json:"-" gorm:"column:token" fake:"skip"` // the actual data is stored here
+	JwtKey            []byte               `json:"-" fake:"skip"`                     // Do not export it due to leak risk
+	Email             string               `json:"email" fake:"{email}"`
+	Username          string               `gorm:"unique" json:"username" fake:"{username}"`
+	Password          string               `json:"-" fake:"{password:true,true,true,true,true,8}"`
+	SubscriptionToken string               `json:"subscription_token"`
+	CurrentTraffic    int64                `json:"current_traffic"`
+	MaxTraffic        int64                `json:"max_traffic"`
+	Groups            []*Group             `gorm:"many2many:groups_users;" json:"groups" fake:"skip"`
 }
 
 // GetJwtKey provide access to private var jwtKey, if jwtKey is nil then generate it

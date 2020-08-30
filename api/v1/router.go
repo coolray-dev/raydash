@@ -7,6 +7,7 @@ import (
 	"github.com/coolray-dev/raydash/api/v1/handler/nodes"
 	"github.com/coolray-dev/raydash/api/v1/handler/options"
 	"github.com/coolray-dev/raydash/api/v1/handler/services"
+	"github.com/coolray-dev/raydash/api/v1/handler/subscription"
 	"github.com/coolray-dev/raydash/api/v1/handler/users"
 	"github.com/coolray-dev/raydash/api/v1/middleware"
 	"github.com/gin-contrib/cors"
@@ -95,6 +96,10 @@ func setupRoutes(router *gin.RouterGroup) {
 		announcementsAPI.GET("/:aid", announcements.Show)
 		announcementsAPI.PATCH("/:aid", announcements.Update)
 		announcementsAPI.DELETE("/:aid", announcements.Destroy)
+	}
+	subscriptionAPI := router.Group("/subscription")
+	{
+		subscriptionAPI.GET("/clash", subscription.Clash)
 	}
 
 	return

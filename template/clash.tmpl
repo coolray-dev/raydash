@@ -1,0 +1,44 @@
+#port: 7890
+socks-port: 7891
+redir-port: 7892
+allow-lan: true
+mode: Rule
+log-level: info
+dns:
+  enable: true
+  ipv6: true
+  listen: 0.0.0.0:1053
+  enhanced-mode: redir-host
+  nameserver:
+    - https://doh.rixcloud.dev/dns-query
+    - https://dns.alidns.com/dns-query
+    - https://dns.pub/dns-query
+  fallback:
+    - https://doh.dns.sb/dns-query
+    - https://dns.google/dns-query
+    - https://1.1.1.1/dns-query
+
+proxies:
+{{range .}}
+  - name: {{.Name}}
+    type: {{.Type}}
+    server: {{.Server}}
+    port: {{.Port}}
+    uuid: {{.UUID}}
+    alterId: {{.AlterID}}
+    cipher: {{.Cipher}}
+    tls: true
+    udp: {{.UDP}}
+    network: {{.Network}}
+    ws-path: {{.WSPath}}
+{{end}}
+
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      {{range .}}- {{.Name}}
+      {{end}}
+
+rules:
+
