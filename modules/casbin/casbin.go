@@ -4,22 +4,40 @@ import (
 	"strconv"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
-	"github.com/coolray-dev/raydash/modules/utils"
 )
 
+// Enforcer is a casbin enforcer instance
 var Enforcer *casbin.Enforcer
 
 func init() {
+
+	// Init casbin Model
+	m := model.NewModel()
+	m.AddDef("r", "r", "sub, obj, act")
+	m.AddDef("p", "p", "sub, obj, act")
+	m.AddDef("g", "g", "_, _")
+	m.AddDef("e", "e", "some(where (p.eft == allow))")
+	m.AddDef("m", "m", "g(r.sub, p.sub) && r.obj =~ p.obj && (r.act == p.act || p.act == \"*\")")
+
+	// Init GORM Adapter using existing DB Connection
 	adapter, err := gormadapter.NewAdapterByDB(database.DB)
 	if err != nil {
 		log.Log.WithError(err).Fatal("Error initializing Casbin")
 	}
-	Enforcer, err = casbin.NewEnforcer(utils.AbsPath("modules/casbin/rbac.conf"), adapter)
-	addPolicies()
+
+	Enforcer, err = casbin.NewEnforcer(m, adapter)
+
+	// Setup Enforcer
+	if !database.DB.Migrator().HasTable("casbin_rule") {
+		addPolicies()
+	} else {
+		Enforcer.LoadPolicy()
+	}
 }
 
 func addPolicies() {
@@ -53,6 +71,7 @@ func addPolicies() {
 	}
 }
 
+// AddDefaultUserPolicy add policies for a new user
 func AddDefaultUserPolicy(u *models.User) {
 	Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
 	Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")
