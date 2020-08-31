@@ -7,7 +7,6 @@ import (
 
 	setting "github.com/coolray-dev/raydash/modules/setting"
 
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -22,7 +21,6 @@ func init() {
 		DB, err = gorm.Open(sqlite.Open(utils.AbsPath(setting.Config.GetString("database.path"))), &gorm.Config{})
 	}
 
-	fmt.Println("db init")
 	if err != nil {
 		fmt.Printf("sqlite creation error %v", err)
 	}

@@ -39,10 +39,6 @@ func main() {
 	// Setup Log
 	setupLog()
 
-	// init DB
-	models.Seed()
-	models.Migrate()
-
 	// waitgroup for goroutine
 	var wg sync.WaitGroup
 

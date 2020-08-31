@@ -1,9 +1,5 @@
 package models
 
-import (
-	orm "github.com/coolray-dev/raydash/database"
-)
-
 type Service struct {
 	BaseModel
 	Name        string `json:"name"`
@@ -38,7 +34,3 @@ type StreamSettings struct {
 }
 
 type SniffingSettings struct{}
-
-func init() {
-	orm.DB.AutoMigrate(&Service{})
-}

@@ -4,14 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v5"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/modules/casbin"
 	"github.com/coolray-dev/raydash/modules/testutils"
 	assertlib "github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	casbin.Enforcer.EnableEnforce(false)
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestIndex(t *testing.T) {
 	testutils.Setup()
