@@ -78,9 +78,10 @@ func main() {
 	setupSwagger()
 
 	// Get bind address from config and setup server
-	bindAddr := setting.Config.GetString("app.port")
+	bindPort := setting.Config.GetString("app.port")
+	bindAddr := setting.Config.GetString("app.address")
 	server := &http.Server{
-		Addr:    ":" + bindAddr,
+		Addr:    bindAddr + ":" + bindPort,
 		Handler: router,
 	}
 
