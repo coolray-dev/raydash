@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"gorm.io/gorm"
-
+	"github.com/coolray-dev/raydash/modules/casbin"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	orm "github.com/coolray-dev/raydash/database"
 	model "github.com/coolray-dev/raydash/models"
@@ -66,6 +66,8 @@ func Create(c *gin.Context) {
 		})
 		return
 	}
+	// Deal With Access Control
+	casbin.Enforcer.AddPolicy("group::"+group.Name, "/*/groups/"+strconv.Itoa(int(group.ID))+"*", "*")
 	c.JSON(http.StatusOK, gin.H{
 		"group": group,
 	})
@@ -81,6 +83,13 @@ func Update(c *gin.Context) {
 	}
 	var group model.Group
 	group.ID = gid
+	if err = orm.DB.Where("id = ?", gid).First(&group).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	oldname := group.Name
 	if err = c.ShouldBindJSON(&group); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -92,6 +101,10 @@ func Update(c *gin.Context) {
 		})
 		return
 	}
+
+	// Remove old policy and add new policy
+	casbin.Enforcer.RemovePolicy("group::"+oldname, "/*/groups/"+strconv.Itoa(int(group.ID))+"*", "*")
+	casbin.Enforcer.AddPolicy("group::"+group.Name, "/*/groups/"+strconv.Itoa(int(group.ID))+"*", "*")
 	c.JSON(http.StatusOK, gin.H{
 		"group": group,
 	})
@@ -107,13 +120,21 @@ func Destroy(c *gin.Context) {
 	}
 	var group model.Group
 	group.ID = gid
-
+	if err = orm.DB.Where("id = ?", gid).First(&group).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	oldname := group.Name
 	if err = orm.DB.Delete(&group).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+
+	casbin.Enforcer.RemovePolicy("group::"+oldname, "/*/groups/"+strconv.Itoa(int(group.ID))+"*", "*")
 	c.JSON(http.StatusOK, gin.H{
 		"group": "",
 	})
@@ -187,6 +208,9 @@ func AppendUser(c *gin.Context) {
 		})
 		return
 	}
+
+	// Add User to Group in casbin
+	casbin.Enforcer.AddGroupingPolicy(user.Username, group.Name)
 	c.JSON(http.StatusOK, gin.H{
 		"users": group.Users,
 	})
@@ -236,6 +260,10 @@ func RemoveUser(c *gin.Context) {
 		})
 		return
 	}
+
+	// Remove User from Group in casbin
+	casbin.Enforcer.RemoveGroupingPolicy(username, group.Name)
+
 	c.JSON(http.StatusOK, gin.H{
 		"users": group.Users,
 	})
