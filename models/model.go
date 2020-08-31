@@ -12,7 +12,7 @@ import (
 )
 
 type BaseModel struct {
-	ID        uint64    `gorm:"primary_key" json:"id" fake:"skip"`
+	ID        uint64    `gorm:"primaryKey" json:"id" fake:"skip"`
 	CreatedAt time.Time `json:"created_at" fake:"skip"`
 	UpdatedAt time.Time `json:"updated_at" fake:"skip"`
 }

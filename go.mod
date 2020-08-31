@@ -5,7 +5,10 @@ go 1.14
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/brianvoe/gofakeit/v5 v5.9.1
+	github.com/casbin/casbin v1.9.1 // indirect
 	github.com/casbin/casbin/v2 v2.11.2
+	github.com/casbin/gorm-adapter v1.0.0
+	github.com/casbin/gorm-adapter/v3 v3.0.2
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gbrlsnchs/jwt/v3 v3.0.0-rc.2
 	github.com/gin-contrib/cors v1.3.1
