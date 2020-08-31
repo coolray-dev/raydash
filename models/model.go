@@ -18,7 +18,7 @@ type BaseModel struct {
 }
 
 func Seed() {
-	if !orm.DB.HasTable(&Group{}) {
+	if !orm.DB.Migrator().HasTable(&Group{}) {
 		orm.DB.AutoMigrate(&Group{})
 		var adminGroup Group
 		adminGroup.ID = 1
@@ -27,7 +27,7 @@ func Seed() {
 			fmt.Println("Database Seeding Error: ", err)
 		}
 	}
-	if !orm.DB.HasTable(&User{}) {
+	if !orm.DB.Migrator().HasTable(&User{}) {
 		orm.DB.AutoMigrate(&User{})
 		var admin User = User{
 			UUID:     uuid.New().String(),

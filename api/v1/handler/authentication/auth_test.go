@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v5"
@@ -15,13 +16,24 @@ import (
 	assertlib "github.com/stretchr/testify/assert"
 )
 
+// Create a fake user for testing
+var user models.User
+
+func TestMain(m *testing.M) {
+
+	tx, teardown := testutils.Setup()
+	defer teardown(tx)
+
+	gofakeit.Struct(&user)
+
+	orm.DB.Create(&user)
+
+	code := m.Run()
+	os.Exit(code)
+}
+
 func TestLogin(t *testing.T) {
 	router := testutils.GetRouter()
-	models.Seed()
-	models.Migrate()
-
-	teardown := testutils.Setup()
-	defer teardown()
 
 	cases := []struct {
 		Name     string
@@ -68,14 +80,8 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
-	teardown := testutils.Setup()
-	defer teardown()
 
 	router := testutils.GetRouter()
-
-	var user models.User
-	gofakeit.Struct(&user)
-	orm.DB.Create(&user)
 
 	refreshToken := testutils.SignRefreshToken(&user)
 

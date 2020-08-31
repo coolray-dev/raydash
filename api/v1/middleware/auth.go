@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // AuthNodeToken check if request is from a node instead of a user
@@ -39,14 +41,14 @@ func AuthNodeToken() gin.HandlerFunc {
 			return
 		}
 		var node models.Node
-		if query := orm.DB.Where("access_token = ?", token).First(&node); query.RecordNotFound() {
+		if err := orm.DB.Where("access_token = ?", token).First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Log.Debug("Token Not Matching Any Node")
 			c.Set("isNode", false)
 			return
-		} else if query.Error != nil {
-			log.Log.WithError(query.Error).Info("Database Error")
+		} else if err != nil {
+			log.Log.WithError(err).Info("Database Error")
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": query.Error.Error(),
+				"error": err.Error(),
 			})
 			c.Abort()
 			return
@@ -118,9 +120,9 @@ func AuthAccessToken() gin.HandlerFunc {
 		}
 
 		var user models.User
-		if query := orm.DB.Where("id = ?", payload.UID).
+		if err := orm.DB.Where("id = ?", payload.UID).
 			Where("username = ?", payload.Username).
-			First(&user); query.RecordNotFound() {
+			First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 
 			log.Log.Info("Invalid User")
 
@@ -128,10 +130,10 @@ func AuthAccessToken() gin.HandlerFunc {
 				"error": "User not found",
 			})
 			c.Abort()
-		} else if query.Error != nil {
-			log.Log.WithError(query.Error).Error("Database Error")
+		} else if err != nil {
+			log.Log.WithError(err).Error("Database Error")
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": query.Error.Error(),
+				"error": err.Error(),
 			})
 			c.Abort()
 		}

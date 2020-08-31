@@ -7,6 +7,7 @@ import (
 	"time"
 
 	orm "github.com/coolray-dev/raydash/database"
+	"gorm.io/gorm"
 )
 
 // User table model
@@ -44,7 +45,7 @@ func (user *User) GetJwtKey() (key []byte, err error) {
 
 // BeforeSave marshal the token map
 // This is a GORM feature called hook
-func (user *User) BeforeSave() error {
+func (user *User) BeforeSave(*gorm.DB) error {
 	if user.Token == nil {
 		return nil
 	}
@@ -59,7 +60,7 @@ func (user *User) BeforeSave() error {
 }
 
 // AfterFind unmarshal token map
-func (user *User) AfterFind() error {
+func (user *User) AfterFind(*gorm.DB) error {
 	if user.TokenStr == "" {
 		return nil
 	}

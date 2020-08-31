@@ -1,9 +1,12 @@
 package nodes
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"gorm.io/gorm"
 
 	"github.com/sirupsen/logrus"
 
@@ -114,13 +117,13 @@ func Show(c *gin.Context) {
 	var node model.Node
 	node.ID = nid
 
-	if query := orm.DB.First(&node); query.RecordNotFound() {
+	if err := orm.DB.First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
-		c.JSON(http.StatusNotFound, gin.H{"error": query.Error.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
-	} else if query.Error != nil {
+	} else if err != nil {
 		log.Log.WithError(err).Error("Database Error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

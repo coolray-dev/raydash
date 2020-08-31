@@ -3,6 +3,7 @@ package authentication_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,11 +15,11 @@ import (
 	"github.com/coolray-dev/raydash/modules/utils"
 	"github.com/google/uuid"
 	assertlib "github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestRegister(t *testing.T) {
-	teardown := testutils.Setup()
-	defer teardown()
+
 	router := testutils.GetRouter()
 
 	// Create a fake user for testing
@@ -113,11 +114,11 @@ func TestRegister(t *testing.T) {
 
 				var user models.User
 				assert.False(
-					orm.DB.Where("username = ?", c.Username).
+					errors.Is(orm.DB.Where("username = ?", c.Username).
 						Where("email = ?", c.Email).
 						Where("password = ?", utils.Hash(c.Password)).
 						First(&user).
-						RecordNotFound(),
+						Error, gorm.ErrRecordNotFound),
 				)
 
 				_, UUIDParseErr = uuid.Parse(user.UUID)

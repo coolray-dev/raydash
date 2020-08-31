@@ -14,8 +14,7 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	teardown := testutils.Setup()
-	defer teardown()
+	testutils.Setup()
 
 	router := testutils.GetRouter()
 

@@ -27,7 +27,6 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	v1 "github.com/coolray-dev/raydash/api/v1"
-	orm "github.com/coolray-dev/raydash/database"
 	_ "github.com/coolray-dev/raydash/docs"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
@@ -41,7 +40,6 @@ func main() {
 	setupLog()
 
 	// init DB
-	defer orm.DB.Close()
 	models.Seed()
 	models.Migrate()
 

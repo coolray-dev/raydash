@@ -1,9 +1,12 @@
 package groups
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 
@@ -36,11 +39,11 @@ func Show(c *gin.Context) {
 	var group model.Group
 	group.ID = gid
 
-	if query := orm.DB.First(&group); query.RecordNotFound() {
-		c.JSON(http.StatusNotFound, gin.H{"error": query.Error.Error()})
+	if err := orm.DB.First(&group).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -125,13 +128,13 @@ func Users(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if query := orm.DB.Preload("Users").Where("ID = ?", gid).First(&group); query.RecordNotFound() {
+	if err := orm.DB.Preload("Users").Where("ID = ?", gid).First(&group).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusOK, gin.H{
 			"users": "[]",
 		})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -159,22 +162,22 @@ func AppendUser(c *gin.Context) {
 		return
 	}
 	var user model.User
-	if query := orm.DB.Where("username = ?", json.Username).First(&user); query.RecordNotFound() {
+	if err := orm.DB.Where("username = ?", json.Username).First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"users": "[]",
 		})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if query := orm.DB.Preload("Users").Where("ID = ?", gid).First(&group); query.RecordNotFound() {
+	if err := orm.DB.Preload("Users").Where("ID = ?", gid).First(&group).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusOK, gin.H{
 			"users": "[]",
 		})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	group.Users = append(group.Users, &user)
@@ -201,22 +204,22 @@ func RemoveUser(c *gin.Context) {
 	}
 
 	var user model.User
-	if query := orm.DB.Where("username = ?", username).First(&user); query.RecordNotFound() {
+	if err := orm.DB.Where("username = ?", username).First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"users": "[]",
 		})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if query := orm.DB.Preload("Users").Where("ID = ?", gid).First(&group); query.RecordNotFound() {
+	if err := orm.DB.Preload("Users").Where("ID = ?", gid).First(&group).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusOK, gin.H{
 			"users": "[]",
 		})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	var index int

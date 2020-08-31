@@ -1,9 +1,12 @@
 package announcements
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"gorm.io/gorm"
 
 	orm "github.com/coolray-dev/raydash/database"
 	model "github.com/coolray-dev/raydash/models"
@@ -33,7 +36,7 @@ func Index(c *gin.Context) {
 	}
 
 	offset := limit.(uint64) * (page.(uint64) - 1)
-	query = query.Limit(limit).Offset(offset).Order("updated_at desc")
+	query = query.Limit(int(limit.(uint64))).Offset(int(offset)).Order("updated_at desc")
 
 	if err := query.Find(&anns).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -88,11 +91,11 @@ func Show(c *gin.Context) {
 
 	ann.ID = aid
 
-	if query := orm.DB.First(&ann); query.RecordNotFound() {
-		c.JSON(http.StatusNotFound, gin.H{"error": query.Error.Error()})
+	if err := orm.DB.First(&ann).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -123,11 +126,11 @@ func Update(c *gin.Context) {
 	var ann model.Announcement
 	ann.ID = aid
 
-	if query := orm.DB.First(&ann); query.RecordNotFound() {
-		c.JSON(http.StatusNotFound, gin.H{"error": query.Error.Error()})
+	if err := orm.DB.First(&ann).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
-	} else if query.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
