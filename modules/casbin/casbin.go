@@ -24,7 +24,7 @@ func init() {
 
 func addPolicies() {
 	basicRules := [][]string{
-		[]string{"role::admin", "/*", "*"},
+		[]string{"group::admin", "/*", "*"},
 		[]string{"role::anonymous", "/*/swagger/*", "*"},
 		[]string{"role::anonymous", "/*/login", "POST"},
 		[]string{"role::anonymous", "/*/register", "POST"},
@@ -37,10 +37,11 @@ func addPolicies() {
 		log.Log.WithError(err).Error()
 	}
 	for _, g := range groups {
-		Enforcer.AddPolicy("role::"+g.Name, "/*/groups/"+strconv.Itoa(int(g.ID))+"*", "*")
+		Enforcer.AddPolicy("group::"+g.Name, "/*/groups/"+strconv.Itoa(int(g.ID))+"*", "*")
 		for _, u := range g.Users {
-			Enforcer.AddGroupingPolicy(u.Username, g.Name)
+			Enforcer.AddGroupingPolicy(u.Username, "group::"+g.Name)
 			Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
+			Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")
 		}
 	}
 	var users []models.User
@@ -50,4 +51,10 @@ func addPolicies() {
 	for _, u := range users {
 		Enforcer.AddPolicy(u.Username, "/*/users/"+strconv.Itoa(int(u.ID))+"*", "*")
 	}
+}
+
+func AddDefaultUserPolicy(u *models.User) {
+	Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
+	Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")
+	Enforcer.AddPolicy(u.Username, "/*/users/"+strconv.Itoa(int(u.ID))+"*", "*")
 }

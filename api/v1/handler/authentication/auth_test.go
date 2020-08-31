@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/coolray-dev/raydash/modules/casbin"
+
 	"github.com/brianvoe/gofakeit/v5"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
@@ -27,7 +29,7 @@ func TestMain(m *testing.M) {
 	gofakeit.Struct(&user)
 
 	orm.DB.Create(&user)
-
+	casbin.AddDefaultUserPolicy(&user)
 	code := m.Run()
 	os.Exit(code)
 }

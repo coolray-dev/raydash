@@ -16,7 +16,6 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	casbin.Enforcer.EnableEnforce(false)
 	code := m.Run()
 	os.Exit(code)
 }
@@ -29,6 +28,7 @@ func TestIndex(t *testing.T) {
 	var user models.User
 	gofakeit.Struct(&user)
 	orm.DB.Save(&user)
+	casbin.AddDefaultUserPolicy(&user)
 
 	cases := []struct {
 		Name   string

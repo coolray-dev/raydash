@@ -161,7 +161,14 @@ func ParseIdentity() gin.HandlerFunc {
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role := c.MustGet("role").(string)
-		res, err := casbin.Enforcer.Enforce("role::"+role, c.Request.URL.Path, c.Request.Method)
+		var res bool
+		var err error
+		if role == "anonymous" {
+			res, err = casbin.Enforcer.Enforce("role::"+role, c.Request.URL.Path, c.Request.Method)
+		} else {
+			res, err = casbin.Enforcer.Enforce(role, c.Request.URL.Path, c.Request.Method)
+		}
+
 		if err != nil {
 			log.Log.WithError(err).Warn("Casbin Error")
 			c.JSON(http.StatusInternalServerError, gin.H{
