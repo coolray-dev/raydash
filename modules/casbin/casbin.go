@@ -33,7 +33,7 @@ func init() {
 	Enforcer, err = casbin.NewEnforcer(m, adapter)
 
 	// Setup Enforcer
-	if !database.DB.Migrator().HasTable("casbin_rule") {
+	if len(Enforcer.GetPolicy()) == 0 {
 		addPolicies()
 	} else {
 		Enforcer.LoadPolicy()
