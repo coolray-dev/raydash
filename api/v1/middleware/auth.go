@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	auth "github.com/coolray-dev/raydash/api/v1/handler/authentication"
@@ -16,209 +17,182 @@ import (
 	"gorm.io/gorm"
 )
 
-// AuthNodeToken check if request is from a node instead of a user
-func AuthNodeToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		header := c.GetHeader("Authorization")
-		if header == "" {
-			log.Log.Info("Empty Authorization Header")
-			c.Set("isNode", false)
-			return
-		}
-		headerList := strings.Split(header, " ")
-		if len(headerList) != 2 {
-			log.Log.Info("Invalid Authorization Header")
-			c.Set("isNode", false)
-			return
-		}
-		t := headerList[0]
-		token := headerList[1]
-		if t != "Bearer" {
-			log.Log.Info("Only Support Bearer Authorization")
-			c.Set("isNode", false)
-			return
-		}
-		var node models.Node
-		if err := orm.DB.Where("access_token = ?", token).First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Log.Debug("Token Not Matching Any Node")
-			c.Set("isNode", false)
-			return
-		} else if err != nil {
-			log.Log.WithError(err).Info("Database Error")
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			c.Abort()
-			return
-		}
-		log.Log.Debug("Token Match")
-		c.Set("isNode", true)
-		c.Set("nodeID", node.ID)
-		return
-	}
-}
-
-// ParseAIdentity parse the Authorization Header from request
-// and pass
-//
-// *models.User
-// uid
-// username
-//
-// to gin Context
-func ParseIdentity() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		// Check if is a node access
-		// if yes then should not parse jwt, directly return
-		isNode, isNodeExists := c.Get("isNode")
-		if isNodeExists {
-			if isNode.(bool) {
-				c.Set("role", "node")
-				return
-			}
-		}
-
-		header := c.GetHeader("Authorization")
-		if header == "" {
-			log.Log.Info("Empty Authorization Header")
-			c.Set("role", "anonymous")
-			return
-		}
-		headerList := strings.Split(header, " ")
-		if len(headerList) != 2 {
-			log.Log.Info("Invalid Authorization Header")
-			c.Set("role", "anonymous")
-			return
-		}
-		t := headerList[0]
-		content := headerList[1]
-		if t != "Bearer" {
-			log.Log.Info("Only Support Bearer Authorization")
-			c.Set("role", "anonymous")
-			return
-		}
-		contentList := strings.Split(content, ".")
-		if len(contentList) != 3 {
-			log.Log.Info("Invalid JWT Token")
-			c.Set("role", "anonymous")
-			return
-		}
-
-		var payload auth.TokenPayload
-		dec, _ := base64.StdEncoding.DecodeString(contentList[1] + "==")
-		if err := json.Unmarshal(dec, &payload); err != nil {
-			log.Log.WithError(err).Info("Invalid JWT Token")
-			c.Set("role", "anonymous")
-			return
-		}
-
-		var user models.User
-		if err := orm.DB.Where("id = ?", payload.UID).
-			Where("username = ?", payload.Username).
-			First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-
-			log.Log.Info("Invalid User")
-
-			c.Set("role", "anonymous")
-			return
-		} else if err != nil {
-			log.Log.WithError(err).Error("Database Error")
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			c.Abort()
-			return
-		}
-
-		key, jwtKeyErr := user.GetJwtKey()
-		if jwtKeyErr != nil {
-			log.Log.WithError(jwtKeyErr).Info("Error Getting User JWT Key")
-			c.Set("role", "anonymous")
-			return
-		}
-
-		if plain, err := auth.Verify([]byte(content), key); err != nil {
-			log.Log.WithError(err).Info("JWT Verification Failed")
-			c.Set("role", "anonymous")
-			return
-		} else if plain.Subject != "AccessToken" {
-			log.Log.Info("JWT Subject not matching 'AccessToken', might have used refresh token")
-			c.Set("role", "anonymous")
-			return
-		} else {
-			log.Log.WithField("Expire", plain.ExpirationTime).Debug("JWT Verification Success")
-		}
-
-		c.Set("user", &user)
-		c.Set("uid", payload.UID)
-		c.Set("username", payload.Username)
-		c.Set("role", user.Username)
-		return
-	}
-}
-
+// Authorize Parse identity info from header and check permission
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role := c.MustGet("role").(string)
-		var res bool
-		var err error
-		if role == "anonymous" {
-			res, err = casbin.Enforcer.Enforce("role::"+role, c.Request.URL.Path, c.Request.Method)
-		} else {
-			res, err = casbin.Enforcer.Enforce(role, c.Request.URL.Path, c.Request.Method)
+
+		// Store role within this whole function
+		var role string
+		var subject string // casbin auth subject
+
+		// Check Authorization Header
+		kind, token, headerErr := checkHeader(c)
+		if headerErr != nil {
+			log.Log.Info(headerErr.Error())
+			role = "anonymous"
+			goto casbin
 		}
 
+		switch kind {
+		case "node":
+			var node models.Node
+			if err := orm.DB.Where("access_token = ?", token).First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+				log.Log.Debug("Token Not Matching Any Node")
+				role = "anonymous"
+				break
+			} else if err != nil {
+				log.Log.WithError(err).Info("Database Error")
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				c.Abort()
+				return
+			} else {
+				log.Log.Debug("Token Match")
+				role = "node"
+				subject = "node::" + strconv.Itoa(int(node.ID))
+			}
+
+		case "jwt":
+			tokenSplit := strings.Split(token, ".")
+			var payload auth.TokenPayload
+			dec, base64err := base64.RawURLEncoding.DecodeString(tokenSplit[1])
+			if base64err != nil {
+				log.Log.WithError(base64err).Info("Invalid JWT Token")
+				role = "anonymous"
+				break
+			}
+			if err := json.Unmarshal(dec, &payload); err != nil {
+				log.Log.WithError(err).Info("Invalid JWT Token")
+				role = "anonymous"
+				break
+			}
+
+			var user models.User
+			if err := orm.DB.Where("id = ?", payload.UID).
+				Where("username = ?", payload.Username).
+				First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+
+				log.Log.Info("Invalid User")
+				role = "anonymous"
+				break
+			} else if err != nil {
+				log.Log.WithError(err).Error("Database Error")
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				c.Abort()
+				return
+			}
+
+			key, jwtKeyErr := user.GetJwtKey()
+			if jwtKeyErr != nil {
+				log.Log.WithError(jwtKeyErr).Info("Error Getting User JWT Key")
+				role = "anonymous"
+				break
+			}
+
+			if plain, err := auth.Verify([]byte(token), key); err != nil {
+				log.Log.WithError(err).Info("JWT Verification Failed")
+				role = "anonymous"
+				break
+			} else if plain.Subject != "AccessToken" {
+				log.Log.Info("JWT Subject not matching 'AccessToken', might have used refresh token")
+				role = "anonymous"
+				break
+			} else {
+				log.Log.WithField("Expire", plain.ExpirationTime).Debug("JWT Verification Success")
+				role = "user"
+				subject = plain.Username
+			}
+
+		default:
+			log.Log.Panic("Unknown Error")
+		}
+
+	casbin:
+		allow, err := casbinAuthorize(role, subject, c.Request.URL.Path, c.Request.Method)
 		if err != nil {
-			log.Log.WithError(err).Warn("Casbin Error")
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err,
-			})
-			c.Abort()
-			return
-		}
-		if !res {
-			log.Log.WithField("Role", role).Debug("Access Denied")
 			c.JSON(http.StatusForbidden, gin.H{
-				"error": "no permission",
+				"error": err.Error(),
 			})
 			c.Abort()
 			return
 		}
-		log.Log.Debug("Access Approved")
+		if !allow {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Permission Denied",
+			})
+			c.Abort()
+			return
+		}
+	}
+}
+
+func checkHeader(c *gin.Context) (kind string, token string, err error) {
+
+	// Get Header
+	header := c.GetHeader("Authorization")
+	if header == "" {
+		err = errors.New("Empty Authorization Header")
+		return
+	}
+
+	headerList := strings.Split(header, " ")
+	if len(headerList) != 2 {
+		err = errors.New("Invalid Authorization Header")
+		return
+	}
+
+	t := headerList[0]
+	content := headerList[1]
+	if t != "Bearer" {
+		err = errors.New("Only Support Bearer Authorization")
+		return
+	}
+	contentList := strings.Split(content, ".")
+
+	switch len(contentList) {
+	case 2:
+		if contentList[0] != "node" {
+			err = errors.New("Invalid Token Structure")
+			return
+		}
+		kind = "node"
+		token = contentList[1]
+		return
+	case 3:
+		kind = "jwt"
+		token = content
+		return
+	default:
+		err = errors.New("Invalid Authorization Token")
 		return
 	}
 }
 
-// AuthAdmin required AuthToken before it
-// it passes a bool called isAdmin to Context
-func AuthAdmin() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func casbinAuthorize(role, sub, obj, act string) (bool, error) {
+	var res bool
+	var err error
 
-		// Check if is a node access
-		// if yes then not admin
-		isNode, isNodeExists := c.Get("isNode")
-		if isNodeExists {
-			if isNode.(bool) {
-				c.Set("isAdmin", false)
-				return
-			}
-		}
-
-		var user models.User
-		tokenUsername := c.MustGet("username")
-		if err := orm.DB.Preload("Groups").Where("username = ?", tokenUsername).First(&user).Error; err != nil {
-			log.Log.WithError(err).Error("Database Error")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			c.Abort()
-			return
-		}
-		for _, g := range user.Groups {
-			if g.ID == 1 {
-				c.Set("isAdmin", true)
-				return
-			}
-		}
-		c.Set("isAdmin", false)
+	switch role {
+	case "anonymous":
+		res, err = casbin.Enforcer.Enforce("role::anonymous", obj, act)
+	case "node":
+		res, err = casbin.Enforcer.Enforce(sub, obj, act)
+	case "user":
+		res, err = casbin.Enforcer.Enforce(sub, obj, act)
+	default:
+		return false, errors.New("Invalid role")
 	}
+
+	if err != nil {
+		return false, err
+	}
+	if !res {
+		log.Log.WithField("Role", role).WithField("Subject", sub).Debug("Access Denied")
+	} else {
+		log.Log.WithField("Role", role).WithField("Subject", sub).Debug("Access Allowed")
+	}
+	return res, nil
 }

@@ -78,11 +78,16 @@ func Logout(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uid, _ := c.Get("uid")
-	var user model.User
-	user.ID = uid.(uint64)
+	uid, JWTErr := ParseUID(json.RefreshToken)
+	if JWTErr != nil {
+		c.JSON(http.StatusNotModified, gin.H{
+			"error": JWTErr.Error(),
+		})
+		return
+	}
 
-	if err := orm.DB.First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	var user models.User
+	if err := orm.DB.Where("id = ?", uid).First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})

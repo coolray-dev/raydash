@@ -30,6 +30,7 @@ func init() {
 		log.Log.WithError(err).Fatal("Error initializing Casbin")
 	}
 
+	// Auto load from DB
 	Enforcer, err = casbin.NewEnforcer(m, adapter)
 
 	// Setup Enforcer
@@ -48,6 +49,8 @@ func addPolicies() {
 		[]string{"role::anonymous", "/*/password/*", "POST"},
 	}
 	Enforcer.AddPolicies(basicRules)
+
+	// Add group policies
 	var groups []models.Group
 	if err := database.DB.Preload("Users").Find(&groups).Error; err != nil {
 		log.Log.WithError(err).Error()
@@ -55,21 +58,36 @@ func addPolicies() {
 	for _, g := range groups {
 		Enforcer.AddPolicy("group::"+g.Name, "/*/groups/"+strconv.Itoa(int(g.ID))+"*", "*")
 		for _, u := range g.Users {
+			// Add user to group
 			Enforcer.AddGroupingPolicy(u.Username, "group::"+g.Name)
-			Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
-			Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")
 		}
 	}
+
+	// Add user policies
 	var users []models.User
 	if err := database.DB.Find(&users).Error; err != nil {
 		log.Log.WithError(err).Error()
 	}
 	for _, u := range users {
-		Enforcer.AddPolicy(u.Username, "/*/users/"+strconv.Itoa(int(u.ID))+"*", "*")
+		AddDefaultUserPolicy(&u)
 	}
+
+	// Add node policies
+	var nodes []models.Node
+	if err := database.DB.Find(&nodes).Error; err != nil {
+		log.Log.WithError(err).Error()
+	}
+	for _, n := range nodes {
+		Enforcer.AddPolicy("node::"+strconv.Itoa(int(n.ID)),
+			"/*/nodes/"+strconv.Itoa(int(n.ID))+"*",
+			"*")
+	}
+
+	// Explicitly trigger save policies
+	Enforcer.SavePolicy()
 }
 
-// AddDefaultUserPolicy add policies for a new user
+// AddDefaultUserPolicy add policies for a user
 func AddDefaultUserPolicy(u *models.User) {
 	Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
 	Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")

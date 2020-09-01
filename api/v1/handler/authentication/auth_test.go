@@ -109,7 +109,7 @@ func TestLogout(t *testing.T) {
 			"Logout with non-existing refresh token in body",
 			testutils.SignAccessToken(&user),
 			gofakeit.Word(),
-			http.StatusNotFound,
+			http.StatusNotModified,
 		},
 		{
 			"Logout with no refresh token provided",

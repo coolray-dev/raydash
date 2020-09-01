@@ -27,7 +27,7 @@ func SetupRouter(router *gin.Engine, c *cors.Config) {
 	// Log Middleware
 	router.Use(middleware.Log())
 
-	router.Use(middleware.ParseIdentity(), middleware.Authorize())
+	router.Use(middleware.Authorize())
 
 	v1 := router.Group("/v1")
 
@@ -38,7 +38,7 @@ func SetupRouter(router *gin.Engine, c *cors.Config) {
 // SetupRoutes initialized a gin router to route request
 func setupRoutes(router *gin.RouterGroup) {
 
-	usersAPI := router.Group("/users", middleware.AuthNodeToken())
+	usersAPI := router.Group("/users")
 	{
 		usersAPI.GET("", middleware.ParseParams(), users.Index)
 		usersAPI.GET("/:username", users.Show)
@@ -60,7 +60,6 @@ func setupRoutes(router *gin.RouterGroup) {
 		passwordAPI.POST("/forget", authentication.ForgetPassword)
 	}
 	nodesAPI := router.Group("/nodes")
-	nodesAPI.Use(middleware.AuthNodeToken())
 	{
 		nodesAPI.GET("", nodes.Index)
 		nodesAPI.POST("", nodes.Create)
@@ -68,7 +67,7 @@ func setupRoutes(router *gin.RouterGroup) {
 		nodesAPI.PATCH("/:nid", nodes.Update)
 		nodesAPI.DELETE("/:nid", nodes.Destroy)
 	}
-	servicesAPI := router.Group("/services", middleware.AuthNodeToken())
+	servicesAPI := router.Group("/services")
 	{
 		servicesAPI.GET("", middleware.ParseParams(), services.Index)
 		servicesAPI.POST("", services.Store)

@@ -1,7 +1,11 @@
 package authentication
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	orm "github.com/coolray-dev/raydash/database"
@@ -100,4 +104,21 @@ func SignAccessToken(user *model.User) (token string, err error) {
 	tokenb, err = jwt.Sign(plain, hs)
 	token = string(tokenb)
 	return token, err
+}
+
+// ParseUID get uid from a jwt
+func ParseUID(token string) (uint64, error) {
+	tokenSplit := strings.Split(token, ".")
+	if len(tokenSplit) != 3 {
+		return 0, errors.New("Invalid JWT Token")
+	}
+	var payload TokenPayload
+	dec, base64Err := base64.RawURLEncoding.DecodeString(tokenSplit[1])
+	if base64Err != nil {
+		return 0, base64Err
+	}
+	if err := json.Unmarshal(dec, &payload); err != nil {
+		return 0, err
+	}
+	return payload.UID, nil
 }
