@@ -27,6 +27,8 @@ func SetupRouter(router *gin.Engine, c *cors.Config) {
 	// Log Middleware
 	router.Use(middleware.Log())
 
+	router.Use(middleware.ParseIdentity(), middleware.Authorize())
+
 	v1 := router.Group("/v1")
 
 	// Finally Setup Routes
@@ -41,7 +43,7 @@ func setupRoutes(router *gin.RouterGroup) {
 		usersAPI.GET("", middleware.ParseParams(), users.Index)
 		usersAPI.GET("/:username", users.Show)
 		usersAPI.PATCH("/:username", users.Update)
-		usersAPI.DELETE("/:username", middleware.AuthAccessToken(), middleware.AuthAdmin(), users.Destroy)
+		usersAPI.DELETE("/:username", users.Destroy)
 		usersAPI.GET("/:username/groups", users.Groups)
 		usersAPI.GET("/:username/nodes", users.Nodes)
 		usersAPI.GET("/:username/services", users.Services)
@@ -49,7 +51,7 @@ func setupRoutes(router *gin.RouterGroup) {
 
 	router.POST("/register", authentication.Register)
 	router.POST("/login", authentication.Login)
-	router.DELETE("/logout", middleware.AuthAccessToken(), authentication.Logout)
+	router.DELETE("/logout", authentication.Logout)
 	router.POST("/refresh", authentication.RefreshToken)
 
 	passwordAPI := router.Group("/password")
@@ -58,7 +60,7 @@ func setupRoutes(router *gin.RouterGroup) {
 		passwordAPI.POST("/forget", authentication.ForgetPassword)
 	}
 	nodesAPI := router.Group("/nodes")
-	nodesAPI.Use(middleware.AuthNodeToken(), middleware.AuthAccessToken(), middleware.AuthAdmin())
+	nodesAPI.Use(middleware.AuthNodeToken())
 	{
 		nodesAPI.GET("", nodes.Index)
 		nodesAPI.POST("", nodes.Create)
@@ -91,7 +93,7 @@ func setupRoutes(router *gin.RouterGroup) {
 		optionsAPI.PUT("/:name", options.Update)
 	}
 
-	announcementsAPI := router.Group("/announcements", middleware.AuthAccessToken())
+	announcementsAPI := router.Group("/announcements")
 	{
 		announcementsAPI.GET("", middleware.ParseParams(), announcements.Index)
 		announcementsAPI.POST("", announcements.Store)

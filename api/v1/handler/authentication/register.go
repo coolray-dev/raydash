@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/coolray-dev/raydash/modules/casbin"
+
 	"github.com/coolray-dev/raydash/modules/utils"
 
 	orm "github.com/coolray-dev/raydash/database"
@@ -50,6 +52,9 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
+
+	// Deal With Access Control
+	casbin.AddDefaultUserPolicy(&user)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"user": user,

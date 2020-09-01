@@ -19,8 +19,6 @@ import (
 )
 
 func TestForgetpassword(t *testing.T) {
-	teardown := testutils.Setup()
-	defer teardown()
 
 	router := testutils.GetRouter()
 

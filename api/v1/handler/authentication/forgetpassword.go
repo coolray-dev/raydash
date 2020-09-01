@@ -1,16 +1,18 @@
 package authentication
 
 import (
+	"errors"
 	"net/http"
 
-	"github.com/coolray-dev/raydash/modules/setting"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	model "github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/mail"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/coolray-dev/raydash/modules/setting"
 )
 
 func ForgetPassword(c *gin.Context) {
@@ -28,19 +30,20 @@ func ForgetPassword(c *gin.Context) {
 	var user model.User
 	var fp model.ForgetPassword
 
-	if query := orm.DB.Where("email = ?", json.Email).First(&user); query.RecordNotFound() {
+	if err := orm.DB.Where("email = ?", json.Email).
+		First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Password reset token has been sent to you if you already registered",
 		})
 		return
-	} else if query.Error != nil {
+	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": query.Error.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
 
-	if orm.DB.Where("user_id = ?", user.ID).First(&fp).RecordNotFound() {
+	if err := orm.DB.Where("user_id = ?", user.ID).First(&fp).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		fp.Token = uuid.New().String()
 		fp.User = &user
 		orm.DB.Create(&fp)

@@ -1,5 +1,6 @@
 app:
-  bind: ":18080"
+  address:
+  port: 18080
   frontend:
     - http://localhost:3000
     - http://localhost

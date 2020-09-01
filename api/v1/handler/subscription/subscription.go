@@ -2,7 +2,10 @@ package subscription
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
+
+	"gorm.io/gorm"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
@@ -16,15 +19,15 @@ func Clash(c *gin.Context) {
 
 	subToken := c.Query("token")
 	var user models.User
-	if query := orm.DB.Preload("Groups").Where("subscription_token = ?", subToken).First(&user); query.RecordNotFound() {
+	if err := orm.DB.Preload("Groups").Where("subscription_token = ?", subToken).First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Log.Info("No Such User in Database")
 		c.Status(http.StatusNotFound)
 		return
-	} else if query.Error != nil {
+	} else if err != nil {
 		log.Log.WithFields(logrus.Fields{
-			"error": query.Error.Error(),
+			"error": err.Error(),
 		}).Error("Database Error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": query.Error.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	var nodes []*models.Node

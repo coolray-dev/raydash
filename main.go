@@ -1,14 +1,17 @@
 // @title RayDash API
-// @version 1.0
-// @description
-// @termsOfService
+// @version 1.0.0
+// @description A Swagger UI For RayDash API
 
 // @license.name GPLv3
 // @license.url https://www.gnu.org/licenses/gpl-3.0.html
 
-// @host
+// @host localhost
 // @BasePath /v1
 // @query.collection.format multi
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 package main
 
@@ -28,7 +31,6 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	v1 "github.com/coolray-dev/raydash/api/v1"
-	orm "github.com/coolray-dev/raydash/database"
 	_ "github.com/coolray-dev/raydash/docs"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
@@ -40,11 +42,6 @@ func main() {
 
 	// Setup Log
 	setupLog()
-
-	// init DB
-	defer orm.DB.Close()
-	models.Seed()
-	models.Migrate()
 
 	// waitgroup for goroutine
 	var wg sync.WaitGroup
@@ -75,10 +72,14 @@ func main() {
 	// Swagger UI
 	router.GET("/v1/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Setup Swagger
+	setupSwagger()
+
 	// Get bind address from config and setup server
-	bindAddr := setting.Config.GetString("app.bind")
+	bindPort := setting.Config.GetString("app.port")
+	bindAddr := setting.Config.GetString("app.address")
 	server := &http.Server{
-		Addr:    bindAddr,
+		Addr:    bindAddr + ":" + bindPort,
 		Handler: router,
 	}
 

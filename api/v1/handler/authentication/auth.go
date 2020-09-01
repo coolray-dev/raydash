@@ -3,11 +3,13 @@ package authentication
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
@@ -30,14 +32,16 @@ func Login(c *gin.Context) {
 		return
 	}
 	var user model.User
-	if query := orm.DB.Where("username = ?", json.Username).Where("password = ?", tool.Hash(json.Password)).First(&user); query.RecordNotFound() {
+	if err := orm.DB.Where("username = ?", json.Username).
+		Where("password = ?", tool.Hash(json.Password)).
+		First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid username or password",
 		})
 		return
-	} else if query.Error != nil {
+	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": query.Error.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -78,14 +82,14 @@ func Logout(c *gin.Context) {
 	var user model.User
 	user.ID = uid.(uint64)
 
-	if query := orm.DB.First(&user); query.RecordNotFound() {
+	if err := orm.DB.First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": query.Error.Error(),
+			"error": err.Error(),
 		})
 		return
-	} else if query.Error != nil {
+	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": query.Error.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -133,17 +137,18 @@ func RefreshToken(c *gin.Context) {
 	}
 
 	var user models.User
-	if query := orm.DB.Where("id = ?", payload.UID).
-		Where("username = ?", payload.Username).First(&user); query.RecordNotFound() {
+	if err := orm.DB.Where("id = ?", payload.UID).
+		Where("username = ?", payload.Username).
+		First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		// user not found
 		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Invalid RefreshToken: " + query.Error.Error(),
+			"error": "Invalid RefreshToken: " + err.Error(),
 		})
 		return
-	} else if query.Error != nil {
+	} else if err != nil {
 		// unknown error
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": query.Error.Error(),
+			"error": err.Error(),
 		})
 		return
 	}

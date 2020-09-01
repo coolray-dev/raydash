@@ -3,6 +3,7 @@ package authentication_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,11 +14,10 @@ import (
 	"github.com/coolray-dev/raydash/modules/testutils"
 	"github.com/coolray-dev/raydash/modules/utils"
 	assertlib "github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestResetpassword(t *testing.T) {
-	teardown := testutils.Setup()
-	defer teardown()
 
 	router := testutils.GetRouter()
 
@@ -31,6 +31,8 @@ func TestResetpassword(t *testing.T) {
 	gofakeit.Struct(&fp2)
 	fp2.User.UUID = gofakeit.UUID()
 	orm.DB.Create(&fp2)
+
+	//defer orm.DB.Rollback()
 
 	cases := []struct {
 		Name     string
@@ -76,7 +78,7 @@ func TestResetpassword(t *testing.T) {
 
 			if c.Status == http.StatusOK {
 				assert.Nil(w.Body)
-				assert.True(orm.DB.Where("id = ?", c.Record.ID).First(c.Record).RecordNotFound())
+				assert.True(errors.Is(orm.DB.Where("id = ?", c.Record.ID).First(c.Record).Error, gorm.ErrRecordNotFound))
 
 				var user models.User
 				orm.DB.Where("id = ?", c.Record.UserID).First(&user)

@@ -14,12 +14,12 @@ type Node struct {
 	MaxTraffic     uint64     `json:"max_traffic"`
 	HasUDP         bool       `json:"hasUDP"`
 	HasMultiPort   bool       `json:"hasMultiPort"`
-	Settings       settings   `json:"settings"`
+	Settings       `json:"settings"`
 }
 
-type settings struct {
-	Listen             string             `json:"listen"`
-	Port               uint               `json:"port"`
-	VmessSetting       VmessSetting       `json:"vmessSettings"`
-	ShadowsocksSetting ShadowsocksSetting `json:"shadowsocksSettings"`
+type Settings struct {
+	Listen             string `json:"listen"`
+	Port               uint   `json:"port"`
+	VmessSetting       `json:"vmessSettings"`
+	ShadowsocksSetting `json:"shadowsocksSettings"`
 }
