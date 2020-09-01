@@ -6,6 +6,11 @@ definitions:
         $ref: '#/definitions/models.Group'
         type: object
     type: object
+  groups.destroyResponse:
+    properties:
+      group:
+        type: string
+    type: object
   groups.indexResponse:
     properties:
       groups:
@@ -20,6 +25,26 @@ definitions:
       group:
         $ref: '#/definitions/models.Group'
         type: object
+    type: object
+  groups.updateResponse:
+    properties:
+      group:
+        $ref: '#/definitions/models.Group'
+        type: object
+    type: object
+  groups.userModificationRequest:
+    properties:
+      username:
+        type: string
+    required:
+    - username
+    type: object
+  groups.usersResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
     type: object
   handler.ErrorResponse:
     properties:
@@ -252,6 +277,42 @@ paths:
       tags:
       - Groups
   /groups/{gid}:
+    delete:
+      consumes:
+      - application/json
+      description: Destroy Group according to gid
+      operationId: groups.Destroy
+      parameters:
+      - description: Group ID
+        in: path
+        name: gid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.destroyResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Destroy Group
+      tags:
+      - Groups
     get:
       consumes:
       - application/json
@@ -286,6 +347,169 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Show Group
+      tags:
+      - Groups
+    patch:
+      consumes:
+      - application/json
+      description: Update a group
+      operationId: groups.Update
+      parameters:
+      - description: Group ID
+        in: path
+        name: gid
+        required: true
+        type: integer
+      - description: Group Object
+        in: body
+        name: group
+        required: true
+        schema:
+          $ref: '#/definitions/models.Group'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.updateResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Group
+      tags:
+      - Groups
+  /groups/{gid}/users:
+    get:
+      consumes:
+      - application/json
+      description: Simply list out all users belong to a certain group
+      operationId: groups.Users
+      parameters:
+      - description: Group ID
+        in: path
+        name: gid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.usersResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Group Users
+      tags:
+      - Groups
+    patch:
+      consumes:
+      - application/json
+      description: Add a user to a group
+      operationId: groups.AppendUser
+      parameters:
+      - description: Username
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/groups.userModificationRequest'
+      - description: Group ID
+        in: path
+        name: gid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.usersResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Append User
+      tags:
+      - Groups
+  /groups/{gid}/users/{username}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a user from a group
+      operationId: groups.RemoveUser
+      parameters:
+      - description: Group ID
+        in: path
+        name: gid
+        required: true
+        type: integer
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.usersResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove User
       tags:
       - Groups
   /users:

@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
+
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/casbin"
-	"github.com/gin-gonic/gin"
 )
 
 type createResponse struct {

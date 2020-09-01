@@ -35,8 +35,6 @@ func init() {
 	// Setup Enforcer
 	if len(Enforcer.GetPolicy()) == 0 {
 		addPolicies()
-	} else {
-		Enforcer.LoadPolicy()
 	}
 }
 
