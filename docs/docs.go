@@ -28,8 +28,177 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/groups": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Simply list out all groups",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "All Groups",
+                "operationId": "groups.Index",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groups.indexResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Create Group",
+                "operationId": "groups.Create",
+                "parameters": [
+                    {
+                        "description": "Group Object",
+                        "name": "group",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Group"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groups.createResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/groups/{gid}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Show Group according to gid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Show Group",
+                "operationId": "groups.Show",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Group ID",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groups.showResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Simply list out all users",
                 "consumes": [
                     "application/json"
@@ -80,6 +249,11 @@ var doc = `{
         },
         "/users/{username}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Return user according to username in url",
                 "consumes": [
                     "application/json"
@@ -123,6 +297,11 @@ var doc = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete a user according to username",
                 "consumes": [
                     "application/json"
@@ -172,6 +351,11 @@ var doc = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update the user provided",
                 "consumes": [
                     "application/json"
@@ -226,6 +410,11 @@ var doc = `{
         },
         "/users/{username}/groups": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Return a list of groups of a user",
                 "consumes": [
                     "application/json"
@@ -271,6 +460,11 @@ var doc = `{
         },
         "/users/{username}/nodes": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Return a list of nodes of a user",
                 "consumes": [
                     "application/json"
@@ -316,6 +510,11 @@ var doc = `{
         },
         "/users/{username}/services": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Return a list of services of a user",
                 "consumes": [
                     "application/json"
@@ -361,6 +560,38 @@ var doc = `{
         }
     },
     "definitions": {
+        "groups.createResponse": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.Group"
+                }
+            }
+        },
+        "groups.indexResponse": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Group"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "groups.showResponse": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.Group"
+                }
+            }
+        },
         "handler.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -417,18 +648,23 @@ var doc = `{
                 "id": {
                     "type": "integer"
                 },
+                "listen": {
+                    "type": "string"
+                },
                 "max_traffic": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
+                "port": {
+                    "type": "integer"
+                },
                 "ports": {
                     "type": "string"
                 },
-                "settings": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.settings"
+                "protocol": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -482,9 +718,6 @@ var doc = `{
                 }
             }
         },
-        "models.ShadowsocksSetting": {
-            "type": "object"
-        },
         "models.User": {
             "type": "object",
             "properties": {
@@ -514,33 +747,6 @@ var doc = `{
                 },
                 "uuid": {
                     "type": "string"
-                }
-            }
-        },
-        "models.VmessSetting": {
-            "type": "object",
-            "properties": {
-                "protocol": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.settings": {
-            "type": "object",
-            "properties": {
-                "listen": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "shadowsocksSettings": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.ShadowsocksSetting"
-                },
-                "vmessSettings": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.VmessSetting"
                 }
             }
         },
@@ -617,6 +823,13 @@ var doc = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
@@ -631,7 +844,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "1.0",
+	Version:     "1.0.0",
 	Host:        "localhost",
 	BasePath:    "/v1",
 	Schemes:     []string{},

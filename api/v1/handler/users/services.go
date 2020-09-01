@@ -20,6 +20,7 @@ type servicesResponse struct {
 // @Summary List all services
 // @Description Return a list of services of a user
 // @ID users.Services
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json

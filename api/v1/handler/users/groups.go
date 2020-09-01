@@ -19,6 +19,7 @@ type groupsResponse struct {
 // @Summary List all groups
 // @Description Return a list of groups of a user
 // @ID users.Groups
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json

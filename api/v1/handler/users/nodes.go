@@ -19,6 +19,7 @@ type nodesResponse struct {
 // @Summary List all nodes
 // @Description Return a list of nodes of a user
 // @ID users.Nodes
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json

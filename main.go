@@ -1,5 +1,5 @@
 // @title RayDash API
-// @version 1.0
+// @version 1.0.0
 // @description A Swagger UI For RayDash API
 
 // @license.name GPLv3
@@ -8,6 +8,10 @@
 // @host localhost
 // @BasePath /v1
 // @query.collection.format multi
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 package main
 

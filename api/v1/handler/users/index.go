@@ -21,6 +21,7 @@ type indexResponse struct {
 // @Summary All Users
 // @Description Simply list out all users
 // @ID users.Index
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json

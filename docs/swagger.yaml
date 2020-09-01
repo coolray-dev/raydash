@@ -1,5 +1,26 @@
 basePath: /v1
 definitions:
+  groups.createResponse:
+    properties:
+      group:
+        $ref: '#/definitions/models.Group'
+        type: object
+    type: object
+  groups.indexResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/models.Group'
+        type: array
+      total:
+        type: integer
+    type: object
+  groups.showResponse:
+    properties:
+      group:
+        $ref: '#/definitions/models.Group'
+        type: object
+    type: object
   handler.ErrorResponse:
     properties:
       error:
@@ -37,15 +58,18 @@ definitions:
         type: string
       id:
         type: integer
+      listen:
+        type: string
       max_traffic:
         type: integer
       name:
         type: string
+      port:
+        type: integer
       ports:
         type: string
-      settings:
-        $ref: '#/definitions/models.settings'
-        type: object
+      protocol:
+        type: string
       updated_at:
         type: string
     type: object
@@ -80,8 +104,6 @@ definitions:
       uuid:
         type: string
     type: object
-  models.ShadowsocksSetting:
-    type: object
   models.User:
     properties:
       created_at:
@@ -102,24 +124,6 @@ definitions:
         type: string
       uuid:
         type: string
-    type: object
-  models.VmessSetting:
-    properties:
-      protocol:
-        type: string
-    type: object
-  models.settings:
-    properties:
-      listen:
-        type: string
-      port:
-        type: integer
-      shadowsocksSettings:
-        $ref: '#/definitions/models.ShadowsocksSetting'
-        type: object
-      vmessSettings:
-        $ref: '#/definitions/models.VmessSetting'
-        type: object
     type: object
   users.destroyResponse:
     properties:
@@ -176,8 +180,114 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.html
   title: RayDash API
-  version: "1.0"
+  version: 1.0.0
 paths:
+  /groups:
+    get:
+      consumes:
+      - application/json
+      description: Simply list out all groups
+      operationId: groups.Index
+      parameters:
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.indexResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: All Groups
+      tags:
+      - Groups
+    post:
+      consumes:
+      - application/json
+      description: Create a group
+      operationId: groups.Create
+      parameters:
+      - description: Group Object
+        in: body
+        name: group
+        required: true
+        schema:
+          $ref: '#/definitions/models.Group'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.createResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Group
+      tags:
+      - Groups
+  /groups/{gid}:
+    get:
+      consumes:
+      - application/json
+      description: Show Group according to gid
+      operationId: groups.Show
+      parameters:
+      - description: Group ID
+        in: path
+        name: gid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groups.showResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Show Group
+      tags:
+      - Groups
   /users:
     get:
       consumes:
@@ -208,6 +318,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: All Users
       tags:
       - Users
@@ -242,6 +354,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Delete a user
       tags:
       - Users
@@ -271,6 +385,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Show the required user
       tags:
       - Users
@@ -306,6 +422,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Update user
       tags:
       - Users
@@ -336,6 +454,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: List all groups
       tags:
       - Users
@@ -366,6 +486,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: List all nodes
       tags:
       - Users
@@ -396,7 +518,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: List all services
       tags:
       - Users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

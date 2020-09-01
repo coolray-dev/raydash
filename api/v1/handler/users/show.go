@@ -19,6 +19,7 @@ type showResponse struct {
 // @Summary Show the required user
 // @Description Return user according to username in url
 // @ID users.Show
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json

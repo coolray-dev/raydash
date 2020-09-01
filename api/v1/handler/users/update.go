@@ -19,6 +19,7 @@ type updateResponse struct {
 // @Summary Update user
 // @Description Update the user provided
 // @ID users.Update
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json

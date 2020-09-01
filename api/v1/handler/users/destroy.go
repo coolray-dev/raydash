@@ -19,6 +19,7 @@ type destroyResponse struct {
 // @Summary Delete a user
 // @Description Delete a user according to username
 // @ID users.Destroy
+// @Security ApiKeyAuth
 // @Tags Users
 // @Accept  json
 // @Produce  json
