@@ -1,4 +1,4 @@
-package authentication
+package jwt
 
 import (
 	"encoding/base64"

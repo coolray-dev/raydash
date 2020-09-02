@@ -3,6 +3,7 @@ package authentication_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -86,6 +87,7 @@ func TestLogout(t *testing.T) {
 	router := testutils.GetRouter()
 
 	refreshToken := testutils.SignRefreshToken(&user)
+	fmt.Println(refreshToken)
 
 	cases := []struct {
 		Name         string
@@ -100,7 +102,7 @@ func TestLogout(t *testing.T) {
 			http.StatusNoContent,
 		},
 		{
-			"Nomal logout with refresh token",
+			"Normal logout with refresh token",
 			refreshToken,
 			refreshToken,
 			http.StatusForbidden,
@@ -109,7 +111,7 @@ func TestLogout(t *testing.T) {
 			"Logout with non-existing refresh token in body",
 			testutils.SignAccessToken(&user),
 			gofakeit.Word(),
-			http.StatusNotModified,
+			http.StatusNotFound,
 		},
 		{
 			"Logout with no refresh token provided",
@@ -122,6 +124,18 @@ func TestLogout(t *testing.T) {
 			"",
 			testutils.SignRefreshToken(&user),
 			http.StatusForbidden,
+		},
+		{
+			"Logout with man made fake user jwt",
+			testutils.SignAccessToken(&user),
+			"eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSYXlEYXNoIiwic3ViIjoiUmVmcmVzaFRva2VuIiwiZXhwIjoxNTk5MDkzMjE1LCJuYmYiOjE1OTkwMDY4MTUsImlhdCI6MTU5OTAwNjgxNSwianRpIjoiZmNmNWZlNTAtZGExZC00MTQ1LThkZGYtNzRhOGViMGJiZWJjIiwidWlkIjoxMjM3MTIzMTIzLCJ1c2VybmFtZSI6IldpemE4NDk0In0.b7LYJLciQ92L0ex_hx5zUO_OeOhuWcaQZ-H-V1UB9eLSWWy7Ntwskv9ndrtE8IQgiNnLHEoriUeh5Zax_xnNeA",
+			http.StatusNotFound,
+		},
+		{
+			"Logout with man made real user jwt",
+			testutils.SignAccessToken(&user),
+			"eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSYXlEYXNoIiwic3ViIjoiUmVmcmVzaFRva2VuIiwiZXhwIjoxNTk5MDkzMjE1LCJuYmYiOjE1OTkwMDY4MTUsImlhdCI6MTU5OTAwNjgxNSwianRpIjoiZmNmNWZlNTAtZGExZC00MTQ1LThkZGYtNzRhOGViMGJiZWJjIiwidWlkIjoxLCJ1c2VybmFtZSI6ImFkbWluIn0.Bc_8WSFIwDjdFb8Cd1ZfX4h3v5Rc54EWufl5LlQxy2gWzlcexys--Gwr8iLsWmUHrdGgp_DZUV7CM9E4r1pwlg",
+			http.StatusNotFound,
 		},
 	}
 

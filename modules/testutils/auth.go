@@ -1,12 +1,12 @@
 package testutils
 
 import (
-	"github.com/coolray-dev/raydash/api/v1/handler/authentication"
 	"github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/modules/jwt"
 )
 
 func SignAccessToken(user *models.User) string {
-	token, err := authentication.SignAccessToken(user)
+	token, err := jwt.SignAccessToken(user)
 
 	if err != nil {
 		panic(err)
@@ -16,7 +16,7 @@ func SignAccessToken(user *models.User) string {
 }
 
 func SignRefreshToken(user *models.User) string {
-	token, err := authentication.SignRefreshToken(user)
+	token, err := jwt.SignRefreshToken(user)
 
 	if err != nil {
 		panic(err)

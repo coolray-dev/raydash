@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	auth "github.com/coolray-dev/raydash/api/v1/handler/authentication"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/casbin"
+	"github.com/coolray-dev/raydash/modules/jwt"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -55,7 +55,7 @@ func Authorize() gin.HandlerFunc {
 
 		case "jwt":
 			tokenSplit := strings.Split(token, ".")
-			var payload auth.TokenPayload
+			var payload jwt.TokenPayload
 			dec, base64err := base64.RawURLEncoding.DecodeString(tokenSplit[1])
 			if base64err != nil {
 				log.Log.WithError(base64err).Info("Invalid JWT Token")
@@ -92,7 +92,7 @@ func Authorize() gin.HandlerFunc {
 				break
 			}
 
-			if plain, err := auth.Verify([]byte(token), key); err != nil {
+			if plain, err := jwt.Verify([]byte(token), key); err != nil {
 				log.Log.WithError(err).Info("JWT Verification Failed")
 				role = "anonymous"
 				break

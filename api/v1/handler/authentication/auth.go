@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coolray-dev/raydash/modules/jwt"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
@@ -45,7 +47,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	accessToken, err := SignAccessToken(&user)
+	accessToken, err := jwt.SignAccessToken(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -53,7 +55,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	var refreshToken string
-	refreshToken, err = SignRefreshToken(&user)
+	refreshToken, err = jwt.SignRefreshToken(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -78,9 +80,9 @@ func Logout(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uid, JWTErr := ParseUID(json.RefreshToken)
+	uid, JWTErr := jwt.ParseUID(json.RefreshToken)
 	if JWTErr != nil {
-		c.JSON(http.StatusNotModified, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": JWTErr.Error(),
 		})
 		return
@@ -134,7 +136,7 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 
-	var payload TokenPayload
+	var payload jwt.TokenPayload
 	dec, _ := base64.StdEncoding.DecodeString(jwtTokens[1] + "==")
 	if err := json.Unmarshal(dec, &payload); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Invalid RefreshToken: " + err.Error()})
@@ -167,7 +169,7 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 
-	_, jwtParseErr := Verify([]byte(req.RefreshToken), key)
+	_, jwtParseErr := jwt.Verify([]byte(req.RefreshToken), key)
 	if jwtParseErr != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "Invalid RefreshToken: " + jwtParseErr.Error(),
@@ -197,7 +199,7 @@ func RefreshToken(c *gin.Context) {
 	}
 
 	// Sign access token and return
-	accessToken, err := SignAccessToken(&user)
+	accessToken, err := jwt.SignAccessToken(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
