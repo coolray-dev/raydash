@@ -46,7 +46,7 @@ require (
 	github.com/swaggo/swag v1.6.7
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a // indirect
-	golang.org/x/tools v0.0.0-20200831203904-5a2aa26beb65 // indirect
+	golang.org/x/tools v0.0.0-20200902012652-d1954cc86c82 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
