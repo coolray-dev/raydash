@@ -60,3 +60,18 @@ func RemoveLoggerHook(l *logrus.Logger, hook interface{}) error {
 	l.ReplaceHooks(newHooks)
 	return nil
 }
+
+//  UInt64SliceDeDuplicate remove duplicated item in a int slice
+func UInt64SliceDeDuplicate(list []uint64) []uint64 {
+	set := make(map[uint64]bool, len(list))
+	for _, x := range list {
+		set[x] = true
+	}
+	result := make([]uint64, len(set))
+	i := 0
+	for x := range set {
+		result[i] = x
+		i++
+	}
+	return result
+}

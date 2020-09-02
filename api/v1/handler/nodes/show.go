@@ -2,9 +2,7 @@ package nodes
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
@@ -13,27 +11,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type accessTokenResponse struct {
-	AccessToken string `json:"access_token"`
+type showResponse struct {
+	Node models.Node
 }
 
-// AccessToken receive a id from request url and return the access token of the specific id
+// Show receive a id from request url and return the node of the specific id
 //
-// AccessToken godoc
-// @Summary Node AccessToken
-// @Description Node AccessToken according to nid
-// @ID Nodes.AccessToken
+// Show godoc
+// @Summary Show Node
+// @Description Show Node according to nid
+// @ID Nodes.Show
 // @Security ApiKeyAuth
 // @Tags Nodes
 // @Accept  json
 // @Produce  json
 // @Param nid path uint true "Node ID"
 // @Param Authorization header string true "Access Token"
-// @Success 200 {object} accessTokenResponse
+// @Success 200 {object} showResponse
 // @Failure 403 {object} handler.ErrorResponse
 // @Failure 500 {object} handler.ErrorResponse
-// @Router /nodes/{nid}/token [get]
-func AccessToken(c *gin.Context) {
+// @Router /nodes/{nid} [get]
+func Show(c *gin.Context) {
 
 	// Get Node ID
 	nid, err := parseNID(c)
@@ -44,8 +42,9 @@ func AccessToken(c *gin.Context) {
 	}
 
 	var node models.Node
+	node.ID = nid
 
-	if err := orm.DB.First(&node, nid).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := orm.DB.First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -55,16 +54,8 @@ func AccessToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, accessTokenResponse{
-		AccessToken: node.AccessToken,
+	c.JSON(http.StatusOK, showResponse{
+		Node: node,
 	})
-	return
-}
-
-func parseNID(c *gin.Context) (nid uint64, err error) {
-	nid, err = strconv.ParseUint(c.Param("nid"), 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("Invalid NID: %w", err)
-	}
 	return
 }

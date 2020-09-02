@@ -2,9 +2,7 @@ package nodes
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
@@ -13,28 +11,28 @@ import (
 	"gorm.io/gorm"
 )
 
-type accessTokenResponse struct {
-	AccessToken string `json:"access_token"`
+type servicesResponse struct {
+	Total    uint
+	Services []*models.Service
 }
 
-// AccessToken receive a id from request url and return the access token of the specific id
+// Services receive a id from request url and return all the services a node has
 //
-// AccessToken godoc
-// @Summary Node AccessToken
-// @Description Node AccessToken according to nid
-// @ID Nodes.AccessToken
+// Services godoc
+// @Summary Node Services
+// @Description Show services of a node
+// @ID Nodes.Services
 // @Security ApiKeyAuth
 // @Tags Nodes
 // @Accept  json
 // @Produce  json
 // @Param nid path uint true "Node ID"
 // @Param Authorization header string true "Access Token"
-// @Success 200 {object} accessTokenResponse
+// @Success 200 {object} servicesResponse
 // @Failure 403 {object} handler.ErrorResponse
 // @Failure 500 {object} handler.ErrorResponse
-// @Router /nodes/{nid}/token [get]
-func AccessToken(c *gin.Context) {
-
+// @Router /nodes/{nid}/services [get]
+func Services(c *gin.Context) {
 	// Get Node ID
 	nid, err := parseNID(c)
 	if err != nil {
@@ -45,7 +43,7 @@ func AccessToken(c *gin.Context) {
 
 	var node models.Node
 
-	if err := orm.DB.First(&node, nid).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := orm.DB.Preload("Services").Where("id = ?", nid).First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -54,17 +52,9 @@ func AccessToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, accessTokenResponse{
-		AccessToken: node.AccessToken,
+	c.JSON(http.StatusOK, servicesResponse{
+		Total:    uint(len(node.Services)),
+		Services: node.Services,
 	})
-	return
-}
-
-func parseNID(c *gin.Context) (nid uint64, err error) {
-	nid, err = strconv.ParseUint(c.Param("nid"), 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("Invalid NID: %w", err)
-	}
 	return
 }

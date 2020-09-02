@@ -9,7 +9,7 @@ type Node struct {
 	Services       []*Service `json:"-"`
 	Host           string     `json:"host"` // The Host to access v2ray
 	Ports          string     `json:"ports"`
-	AccessToken    string     `json:"access_token,omitempty"`
+	AccessToken    string     `json:"-"`
 	CurrentTraffic uint64     `json:"current_traffic"`
 	MaxTraffic     uint64     `json:"max_traffic"`
 	HasUDP         bool       `json:"hasUDP"`
