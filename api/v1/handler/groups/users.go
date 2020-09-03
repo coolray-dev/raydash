@@ -12,7 +12,7 @@ import (
 )
 
 type usersResponse struct {
-	Users []*models.User
+	Users []*models.User `json:"user"`
 }
 
 type userModificationRequest struct {

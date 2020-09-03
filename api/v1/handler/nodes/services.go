@@ -13,7 +13,7 @@ import (
 
 type servicesResponse struct {
 	Total    uint
-	Services []*models.Service
+	Services []*models.Service `json:"services"`
 }
 
 // Services receive a id from request url and return all the services a node has

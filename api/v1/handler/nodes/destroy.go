@@ -10,7 +10,7 @@ import (
 )
 
 type destroyResponse struct {
-	Node string
+	Node string `json:"node"`
 }
 
 // Destroy receive a id from request and delete in from DB

@@ -11,7 +11,7 @@ import (
 )
 
 type updateResponse struct {
-	Group models.Group
+	Group models.Group `json:"group"`
 }
 
 // Update receive a id and a group object from request and update the specific record in DB

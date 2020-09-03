@@ -11,7 +11,7 @@ import (
 )
 
 type servicesResponse struct {
-	Services []*model.Service
+	Services []*model.Service `json:"services"`
 }
 
 // Services returns all services a user has

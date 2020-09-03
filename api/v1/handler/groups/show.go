@@ -11,7 +11,7 @@ import (
 )
 
 type showResponse struct {
-	Group models.Group
+	Group models.Group `json:"group"`
 }
 
 // Show receive a id from request url and return the group of the specific id

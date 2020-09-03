@@ -12,7 +12,7 @@ import (
 )
 
 type createResponse struct {
-	Group models.Group
+	Group models.Group `json:"group"`
 }
 
 // Create receive a group object from request and update the specific record in DB

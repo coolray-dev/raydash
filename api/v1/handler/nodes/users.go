@@ -15,7 +15,7 @@ import (
 
 type usersResponse struct {
 	Total uint
-	Users []models.User
+	Users []models.User `json:"users"`
 }
 
 // Users receive a id from request url and return all the Users a node has

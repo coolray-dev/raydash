@@ -10,7 +10,7 @@ import (
 )
 
 type updateResponse struct {
-	User model.User
+	User model.User `json:"user"`
 }
 
 // Update receive a user object and update it
