@@ -10,7 +10,7 @@ import (
 )
 
 type groupsResponse struct {
-	Groups []*model.Group
+	Groups []*model.Group `json:"groups"`
 }
 
 // Groups shows all groups a user has

@@ -2,6 +2,10 @@ package nodes
 
 import (
 	"net/http"
+	"strconv"
+
+	"github.com/coolray-dev/raydash/modules/casbin"
+	"github.com/coolray-dev/raydash/modules/utils"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
@@ -10,7 +14,7 @@ import (
 )
 
 type createResponse struct {
-	Node models.Node
+	Node models.Node `json:"node"`
 }
 
 // Create receive a id and a node object from request and update the specific record in DB
@@ -39,6 +43,9 @@ func Create(c *gin.Context) {
 		return
 	}
 
+	// Generate access token
+	node.AccessToken = utils.RandString(64)
+
 	// Save to DB
 	if err := orm.DB.Save(&node).Error; err != nil {
 		log.Log.WithError(err).Error("Database Error")
@@ -47,6 +54,11 @@ func Create(c *gin.Context) {
 		})
 		return
 	}
+
+	// Deal with casbin
+	casbin.Enforcer.AddPolicy("node::"+strconv.Itoa(int(node.ID)),
+		"/*/nodes/"+strconv.Itoa(int(node.ID))+"*",
+		"*")
 
 	// Return result
 	log.Log.Debug("Success")

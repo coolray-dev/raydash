@@ -1,16 +1,18 @@
 package nodes
 
 import (
+	"errors"
 	"net/http"
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type updateResponse struct {
-	Node models.Node
+	Node models.Node `json:"node"`
 }
 
 // Update receive a id and a node object from request and update the specific record in DB
@@ -39,7 +41,16 @@ func Update(c *gin.Context) {
 		return
 	}
 	var node models.Node
-	node.ID = nid
+
+	if err := orm.DB.First(&node, nid).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	} else if err != nil {
+		log.Log.WithError(err).Error("Database Error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	// Bind Request
 	if err = c.ShouldBindJSON(&node); err != nil {

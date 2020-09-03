@@ -11,7 +11,7 @@ import (
 
 type indexResponse struct {
 	Total uint
-	Nodes []models.Node
+	Nodes []models.Node `json:"nodes"`
 }
 
 // Index handle GET /nodes which simply list out all nodes
@@ -33,17 +33,17 @@ type indexResponse struct {
 func Index(c *gin.Context) {
 	var n []models.Node
 	nodes := &n
-	if err := orm.DB.Preload("Nodes").Find(nodes).Order("updated_at desc").Error; err != nil {
+	if err := orm.DB.Preload("Groups").Find(nodes).Order("updated_at desc").Error; err != nil {
 		log.Log.WithError(err).Error("Database Error")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if gid, exists := c.Get("gid"); exists {
 		var t []models.Node
-		for _, i := range *nodes {
-			for _, group := range i.Groups {
+		for _, n := range *nodes {
+			for _, group := range n.Groups {
 				if gid == group.ID {
-					t = append(t, i)
+					t = append(t, n)
 					break
 				}
 			}

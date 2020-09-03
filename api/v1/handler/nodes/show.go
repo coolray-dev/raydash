@@ -12,7 +12,7 @@ import (
 )
 
 type showResponse struct {
-	Node models.Node
+	Node models.Node `json:"node"`
 }
 
 // Show receive a id from request url and return the node of the specific id

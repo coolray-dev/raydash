@@ -823,6 +823,42 @@ paths:
       summary: Node AccessToken
       tags:
       - Nodes
+    post:
+      consumes:
+      - text/plain
+      description: Generate Node AccessToken according to nid
+      operationId: Nodes.GenerateToken
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.accessTokenResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Generate Node AccessToken
+      tags:
+      - Nodes
   /nodes/{nid}/users:
     get:
       consumes:

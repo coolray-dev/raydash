@@ -66,6 +66,10 @@ func setupRoutes(router *gin.RouterGroup) {
 		nodesAPI.GET("/:nid", nodes.Show)
 		nodesAPI.PATCH("/:nid", nodes.Update)
 		nodesAPI.DELETE("/:nid", nodes.Destroy)
+		nodesAPI.GET("/:nid/users", nodes.Users)
+		nodesAPI.GET("/:nid/services", nodes.Services)
+		nodesAPI.GET("/:nid/token", nodes.AccessToken)
+		nodesAPI.POST("/:nid/token", nodes.GenerateToken)
 	}
 	servicesAPI := router.Group("/services")
 	{
