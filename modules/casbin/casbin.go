@@ -91,6 +91,6 @@ func addPolicies() {
 func AddDefaultUserPolicy(u *models.User) {
 	Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
 	Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")
-	Enforcer.AddPolicy(u.Username, "/*/users/"+strconv.Itoa(int(u.ID))+"*", "*")
+	Enforcer.AddPolicy(u.Username, "/*/users/"+u.Username+"*", "*")
 	Enforcer.AddPolicy(u.Username, "/*/nodes", "GET")
 }
