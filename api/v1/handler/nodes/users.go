@@ -6,6 +6,7 @@ import (
 
 	"github.com/coolray-dev/raydash/modules/utils"
 
+	"github.com/coolray-dev/raydash/api/v1/handler"
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
@@ -75,6 +76,70 @@ func Users(c *gin.Context) {
 	c.JSON(http.StatusOK, usersResponse{
 		Total: uint(len(users)),
 		Users: users,
+	})
+	return
+}
+
+type trafficResponse struct {
+	User models.User `json:"user"`
+}
+
+type trafficRequest struct {
+	CurrentTraffic int64 `json:"current_traffic"`
+	MaxTraffic     int64 `json:"max_traffic"`
+}
+
+// Traffic receive traffic info and update it
+//
+// Traffic godoc
+// @Summary Update user traffic
+// @Description Update user traffic
+// @ID nodes.Traffic
+// @Security ApiKeyAuth
+// @Tags Nodes
+// @Accept  json
+// @Produce  json
+// @Param traffic body trafficRequest true "Traffic Info Object"
+// @Param nid path uint true "Node ID"
+// @Param username path string true "Username"
+// @Param Authorization header string false "Node Token"
+// @Success 200 {object} trafficResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /nodes/{nid}/users/{username}/traffic [patch]
+func Traffic(c *gin.Context) {
+	var user models.User
+	username := c.Param("username")
+	if err := orm.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, &handler.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	var json trafficRequest
+
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, &handler.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+	if json.CurrentTraffic != 0 {
+		user.CurrentTraffic = json.CurrentTraffic
+	}
+	if json.MaxTraffic != 0 {
+		user.MaxTraffic = json.MaxTraffic
+	}
+
+	if err := orm.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, &handler.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &trafficResponse{
+		User: user,
 	})
 	return
 }

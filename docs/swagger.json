@@ -990,6 +990,72 @@
                 }
             }
         },
+        "/nodes/{nid}/users/{username}/traffic": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update user traffic",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Nodes"
+                ],
+                "summary": "Update user traffic",
+                "operationId": "nodes.Traffic",
+                "parameters": [
+                    {
+                        "description": "Traffic Info Object",
+                        "name": "traffic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/nodes.trafficRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Node ID",
+                        "name": "nid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Node Token",
+                        "name": "Authorization",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/nodes.trafficResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -1373,7 +1439,7 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "Traffic user",
+                "summary": "User traffic",
                 "operationId": "users.Traffic",
                 "parameters": [
                     {
@@ -1702,6 +1768,26 @@
                 "node": {
                     "type": "object",
                     "$ref": "#/definitions/models.Node"
+                }
+            }
+        },
+        "nodes.trafficRequest": {
+            "type": "object",
+            "properties": {
+                "current_traffic": {
+                    "type": "integer"
+                },
+                "max_traffic": {
+                    "type": "integer"
+                }
+            }
+        },
+        "nodes.trafficResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.User"
                 }
             }
         },

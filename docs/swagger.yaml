@@ -188,6 +188,19 @@ definitions:
         $ref: '#/definitions/models.Node'
         type: object
     type: object
+  nodes.trafficRequest:
+    properties:
+      current_traffic:
+        type: integer
+      max_traffic:
+        type: integer
+    type: object
+  nodes.trafficResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+    type: object
   nodes.updateResponse:
     properties:
       node:
@@ -918,6 +931,49 @@ paths:
       summary: Node Users
       tags:
       - Nodes
+  /nodes/{nid}/users/{username}/traffic:
+    patch:
+      consumes:
+      - application/json
+      description: Update user traffic
+      operationId: nodes.Traffic
+      parameters:
+      - description: Traffic Info Object
+        in: body
+        name: traffic
+        required: true
+        schema:
+          $ref: '#/definitions/nodes.trafficRequest'
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.trafficResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user traffic
+      tags:
+      - Nodes
   /users:
     get:
       consumes:
@@ -1188,7 +1244,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Traffic user
+      summary: User traffic
       tags:
       - Users
 securityDefinitions:

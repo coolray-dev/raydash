@@ -21,7 +21,7 @@ type trafficRequest struct {
 // Traffic receive traffic info and update it
 //
 // Traffic godoc
-// @Summary Traffic user
+// @Summary User traffic
 // @Description Update user traffic
 // @ID users.Traffic
 // @Security ApiKeyAuth

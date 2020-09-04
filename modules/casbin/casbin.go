@@ -22,7 +22,7 @@ func init() {
 	m.AddDef("p", "p", "sub, obj, act")
 	m.AddDef("g", "g", "_, _")
 	m.AddDef("e", "e", "some(where (p.eft == allow))")
-	m.AddDef("m", "m", "g(r.sub, p.sub) && r.obj =~ p.obj && (r.act == p.act || p.act == \"*\")")
+	m.AddDef("m", "m", "g(r.sub, p.sub) && r.obj =~ p.obj && regexMatch(r.act, p.act) || g(r.sub, \"group::admin\")")
 
 	// Init GORM Adapter using existing DB Connection
 	adapter, err := gormadapter.NewAdapterByDB(database.DB)
@@ -33,6 +33,7 @@ func init() {
 	// Auto load from DB
 	Enforcer, err = casbin.NewEnforcer(m, adapter)
 
+	Enforcer.ClearPolicy()
 	// Setup Enforcer
 	if len(Enforcer.GetPolicy()) == 0 {
 		addPolicies()
@@ -41,12 +42,12 @@ func init() {
 
 func addPolicies() {
 	basicRules := [][]string{
-		[]string{"group::admin", "/*", "*"},
-		[]string{"role::anonymous", "/*/swagger/*", "*"},
+		[]string{"group::admin", "/*", ".*"},
+		[]string{"role::anonymous", "/*/swagger/.*", ".*"},
 		[]string{"role::anonymous", "/*/login", "POST"},
 		[]string{"role::anonymous", "/*/register", "POST"},
 		[]string{"role::anonymous", "/*/refresh", "POST"},
-		[]string{"role::anonymous", "/*/password/*", "POST"},
+		[]string{"role::anonymous", "/*/password/.*", "POST"},
 	}
 	Enforcer.AddPolicies(basicRules)
 
@@ -56,7 +57,7 @@ func addPolicies() {
 		log.Log.WithError(err).Error()
 	}
 	for _, g := range groups {
-		Enforcer.AddPolicy("group::"+g.Name, "/*/groups/"+strconv.Itoa(int(g.ID))+"*", "*")
+		Enforcer.AddPolicy("group::"+g.Name, "/*/groups/"+strconv.Itoa(int(g.ID))+".*", "*")
 		for _, u := range g.Users {
 			// Add user to group
 			Enforcer.AddGroupingPolicy(u.Username, "group::"+g.Name)
@@ -79,8 +80,8 @@ func addPolicies() {
 	}
 	for _, n := range nodes {
 		Enforcer.AddPolicy("node::"+strconv.Itoa(int(n.ID)),
-			"/*/nodes/"+strconv.Itoa(int(n.ID))+"*",
-			"*")
+			"/*/nodes/"+strconv.Itoa(int(n.ID))+".*",
+			".*")
 	}
 
 	// Explicitly trigger save policies
@@ -89,8 +90,9 @@ func addPolicies() {
 
 // AddDefaultUserPolicy add policies for a user
 func AddDefaultUserPolicy(u *models.User) {
-	Enforcer.AddPolicy(u.Username, "/*/announcements*", "GET")
+	Enforcer.AddPolicy(u.Username, "/*/announcements.*", "GET")
 	Enforcer.AddPolicy(u.Username, "/*/logout", "DELETE")
-	Enforcer.AddPolicy(u.Username, "/*/users/"+u.Username+"*", "*")
-	Enforcer.AddPolicy(u.Username, "/*/nodes", "GET")
+	Enforcer.AddPolicy(u.Username, "/*/users/"+u.Username+"$", ".*")
+	Enforcer.AddPolicy(u.Username, "/*/users/"+u.Username+"/(groups|services|nodes)$", "GET")
+	Enforcer.AddPolicy(u.Username, "/*/nodes$", "GET")
 }
