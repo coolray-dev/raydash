@@ -10,7 +10,7 @@ import (
 )
 
 type showResponse struct {
-	User model.User
+	User model.User `json:"user"`
 }
 
 // Show query a user and return it using url param "username" as condition

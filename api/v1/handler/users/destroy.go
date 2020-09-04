@@ -10,7 +10,7 @@ import (
 )
 
 type destroyResponse struct {
-	User string
+	User string `json:"user"`
 }
 
 // Destroy delete a user from db

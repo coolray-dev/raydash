@@ -11,7 +11,7 @@ import (
 
 type indexResponse struct {
 	Total uint
-	Users []model.User
+	Users []model.User `json:"users"`
 }
 
 // Index handle GET /users which simply list out all users

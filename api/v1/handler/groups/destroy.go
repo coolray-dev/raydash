@@ -11,7 +11,7 @@ import (
 )
 
 type destroyResponse struct {
-	Group string
+	Group string `json:"group"`
 }
 
 // Destroy receive a id from request and delete in from DB

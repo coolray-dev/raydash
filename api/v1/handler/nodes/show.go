@@ -1,4 +1,4 @@
-package groups
+package nodes
 
 import (
 	"errors"
@@ -6,49 +6,56 @@ import (
 
 	orm "github.com/coolray-dev/raydash/database"
 	"github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 type showResponse struct {
-	Group models.Group `json:"group"`
+	Node models.Node `json:"node"`
 }
 
-// Show receive a id from request url and return the group of the specific id
+// Show receive a id from request url and return the node of the specific id
 //
 // Show godoc
-// @Summary Show Group
-// @Description Show Group according to gid
-// @ID groups.Show
+// @Summary Show Node
+// @Description Show Node according to nid
+// @ID Nodes.Show
 // @Security ApiKeyAuth
-// @Tags Groups
+// @Tags Nodes
 // @Accept  json
 // @Produce  json
-// @Param gid path uint true "Group ID"
+// @Param nid path uint true "Node ID"
 // @Param Authorization header string true "Access Token"
 // @Success 200 {object} showResponse
 // @Failure 403 {object} handler.ErrorResponse
 // @Failure 500 {object} handler.ErrorResponse
-// @Router /groups/{gid} [get]
+// @Router /nodes/{nid} [get]
 func Show(c *gin.Context) {
-	gid, err := parseGID(c)
+
+	// Get Node ID
+	nid, err := parseNID(c)
 	if err != nil {
+		log.Log.WithError(err).Warn("Error Getting Node ID")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var group models.Group
-	group.ID = gid
+	var node models.Node
+	node.ID = nid
 
-	if err := orm.DB.First(&group).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := orm.DB.First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	} else if err != nil {
+		log.Log.WithError(err).Error("Database Error")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, showResponse{
-		Group: group,
+		Node: node,
 	})
 	return
 }

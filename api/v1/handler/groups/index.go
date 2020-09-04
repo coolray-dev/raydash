@@ -10,7 +10,7 @@ import (
 
 type indexResponse struct {
 	Total  uint
-	Groups []models.Group
+	Groups []models.Group `json:"groups"`
 }
 
 // Index handle GET /groups which simply list out all groups

@@ -10,7 +10,7 @@ import (
 )
 
 type nodesResponse struct {
-	Nodes []*model.Node
+	Nodes []*model.Node `json:"nodes"`
 }
 
 // Nodes return all nodes a user has

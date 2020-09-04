@@ -41,7 +41,7 @@ definitions:
     type: object
   groups.usersResponse:
     properties:
-      users:
+      user:
         items:
           $ref: '#/definitions/models.User'
         type: array
@@ -66,8 +66,6 @@ definitions:
     type: object
   models.Node:
     properties:
-      access_token:
-        type: string
       created_at:
         type: string
       current_traffic:
@@ -150,6 +148,74 @@ definitions:
       uuid:
         type: string
     type: object
+  nodes.accessTokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  nodes.createResponse:
+    properties:
+      node:
+        $ref: '#/definitions/models.Node'
+        type: object
+    type: object
+  nodes.destroyResponse:
+    properties:
+      node:
+        type: string
+    type: object
+  nodes.indexResponse:
+    properties:
+      nodes:
+        items:
+          $ref: '#/definitions/models.Node'
+        type: array
+      total:
+        type: integer
+    type: object
+  nodes.servicesResponse:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+      total:
+        type: integer
+    type: object
+  nodes.showResponse:
+    properties:
+      node:
+        $ref: '#/definitions/models.Node'
+        type: object
+    type: object
+  nodes.trafficRequest:
+    properties:
+      current_traffic:
+        type: integer
+      max_traffic:
+        type: integer
+    type: object
+  nodes.trafficResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+    type: object
+  nodes.updateResponse:
+    properties:
+      node:
+        $ref: '#/definitions/models.Node'
+        type: object
+    type: object
+  nodes.usersResponse:
+    properties:
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
   users.destroyResponse:
     properties:
       user:
@@ -191,7 +257,29 @@ definitions:
         $ref: '#/definitions/models.User'
         type: object
     type: object
+  users.trafficRequest:
+    properties:
+      current_traffic:
+        type: integer
+      max_traffic:
+        type: integer
+    type: object
+  users.updateRequest:
+    properties:
+      email:
+        type: string
+      subscription_token:
+        type: string
+      uuid:
+        type: string
+    type: object
   users.updateResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+    type: object
+  users.userResponse:
     properties:
       user:
         $ref: '#/definitions/models.User'
@@ -512,6 +600,380 @@ paths:
       summary: Remove User
       tags:
       - Groups
+  /nodes:
+    get:
+      consumes:
+      - application/json
+      description: Simply list out all Nodes
+      operationId: Nodes.Index
+      parameters:
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.indexResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: All Nodes
+      tags:
+      - Nodes
+    post:
+      consumes:
+      - application/json
+      description: Create node from post json object
+      operationId: Nodes.Create
+      parameters:
+      - description: Node Object
+        in: body
+        name: node
+        required: true
+        schema:
+          $ref: '#/definitions/models.Node'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.createResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Node
+      tags:
+      - Nodes
+  /nodes/{nid}:
+    delete:
+      consumes:
+      - application/json
+      description: Destroy Node according to nid
+      operationId: Nodes.Destroy
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.destroyResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Destroy Node
+      tags:
+      - Nodes
+    get:
+      consumes:
+      - application/json
+      description: Show Node according to nid
+      operationId: Nodes.Show
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.showResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Show Node
+      tags:
+      - Nodes
+    patch:
+      consumes:
+      - application/json
+      description: Update a Node
+      operationId: Nodes.Update
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Node Object
+        in: body
+        name: node
+        required: true
+        schema:
+          $ref: '#/definitions/models.Node'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.updateResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Node
+      tags:
+      - Nodes
+  /nodes/{nid}/services:
+    get:
+      consumes:
+      - application/json
+      description: Show services of a node
+      operationId: Nodes.Services
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.servicesResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Node Services
+      tags:
+      - Nodes
+  /nodes/{nid}/token:
+    get:
+      consumes:
+      - application/json
+      description: Node AccessToken according to nid
+      operationId: Nodes.AccessToken
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.accessTokenResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Node AccessToken
+      tags:
+      - Nodes
+    post:
+      consumes:
+      - text/plain
+      description: Generate Node AccessToken according to nid
+      operationId: Nodes.GenerateToken
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.accessTokenResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Generate Node AccessToken
+      tags:
+      - Nodes
+  /nodes/{nid}/users:
+    get:
+      consumes:
+      - application/json
+      description: Show Users of a node
+      operationId: Nodes.Users
+      parameters:
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.usersResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Node Users
+      tags:
+      - Nodes
+  /nodes/{nid}/users/{username}/traffic:
+    patch:
+      consumes:
+      - application/json
+      description: Update user traffic
+      operationId: nodes.Traffic
+      parameters:
+      - description: Traffic Info Object
+        in: body
+        name: traffic
+        required: true
+        schema:
+          $ref: '#/definitions/nodes.trafficRequest'
+      - description: Node ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nodes.trafficResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user traffic
+      tags:
+      - Nodes
   /users:
     get:
       consumes:
@@ -625,7 +1087,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/users.updateRequest'
       - description: Username
         in: path
         name: username
@@ -745,6 +1207,44 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List all services
+      tags:
+      - Users
+  /users/{username}/traffic:
+    patch:
+      consumes:
+      - application/json
+      description: Update user traffic
+      operationId: users.Traffic
+      parameters:
+      - description: User Object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.trafficRequest'
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.userResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: User traffic
       tags:
       - Users
 securityDefinitions:

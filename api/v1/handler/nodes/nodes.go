@@ -6,73 +6,102 @@ import (
 	"net/http"
 	"strconv"
 
-	"gorm.io/gorm"
-
-	"github.com/sirupsen/logrus"
-
-	"github.com/gin-gonic/gin"
+	"github.com/coolray-dev/raydash/modules/utils"
 
 	orm "github.com/coolray-dev/raydash/database"
-	model "github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-// Index handle GET /nodes which simply list out all nodes
-// accept gid param as filter
-func Index(c *gin.Context) {
-	var n []model.Node
-	nodes := &n
-	if err := orm.DB.Preload("Groups").Find(nodes).Order("updated_at desc").Error; err != nil {
+type accessTokenResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
+// AccessToken receive a id from request url and return the access token of the specific id
+//
+// AccessToken godoc
+// @Summary Node AccessToken
+// @Description Node AccessToken according to nid
+// @ID Nodes.AccessToken
+// @Security ApiKeyAuth
+// @Tags Nodes
+// @Accept  json
+// @Produce  json
+// @Param nid path uint true "Node ID"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} accessTokenResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /nodes/{nid}/token [get]
+func AccessToken(c *gin.Context) {
+
+	// Get Node ID
+	nid, err := parseNID(c)
+	if err != nil {
+		log.Log.WithError(err).Warn("Error Getting Node ID")
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var node models.Node
+
+	if err := orm.DB.First(&node, nid).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	} else if err != nil {
 		log.Log.WithError(err).Error("Database Error")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if gid, exists := c.Get("gid"); exists {
-		var t []model.Node
-		for _, i := range *nodes {
-			for _, group := range i.Groups {
-				if gid == group.ID {
-					t = append(t, i)
-					break
-				}
-			}
-		}
-		nodes = &t
-	}
 
-	// Check Admin
-	// Show Access Token if isAdmin
-	if isAdmin := c.MustGet("isAdmin").(bool); !isAdmin {
-		for i := range *nodes {
-			(*nodes)[i].AccessToken = ""
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"total": len(*nodes),
-		"nodes": nodes,
+	c.JSON(http.StatusOK, accessTokenResponse{
+		AccessToken: node.AccessToken,
 	})
+	return
 }
 
-// Create receive a id and a node object from request and update the specific record in DB
-func Create(c *gin.Context) {
+// GenerateToken receive a id from request url and return the access token of the specific id
+//
+// GenerateToken godoc
+// @Summary Generate Node AccessToken
+// @Description Generate Node AccessToken according to nid
+// @ID Nodes.GenerateToken
+// @Security ApiKeyAuth
+// @Tags Nodes
+// @Accept  plain
+// @Produce  json
+// @Param nid path uint true "Node ID"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} accessTokenResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /nodes/{nid}/token [post]
+func GenerateToken(c *gin.Context) {
 
-	// Check Admin
-	if isAdmin := c.MustGet("isAdmin").(bool); !isAdmin {
-		log.Log.WithFields(logrus.Fields{
-			"isAdmin": isAdmin,
-		}).Warning("Node Creation Failed")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only Admin Can Add Node"})
-		return
-	}
-
-	// Bind Request
-	var node model.Node
-	if err := c.ShouldBindJSON(&node); err != nil {
-		log.Log.WithError(err).Warning("Could not bind request")
+	// Get Node ID
+	nid, err := parseNID(c)
+	if err != nil {
+		log.Log.WithError(err).Warn("Error Getting Node ID")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	var node models.Node
+
+	if err := orm.DB.First(&node, nid).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	} else if err != nil {
+		log.Log.WithError(err).Error("Database Error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	node.AccessToken = utils.RandString(64)
 
 	// Save to DB
 	if err := orm.DB.Save(&node).Error; err != nil {
@@ -83,132 +112,9 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	// Return result
-	log.Log.Debug("Success")
-	c.JSON(http.StatusOK, gin.H{
-		"node": node,
+	c.JSON(http.StatusOK, accessTokenResponse{
+		AccessToken: node.AccessToken,
 	})
-	return
-}
-
-// Show receive a id from request url and return the node of the specific id
-func Show(c *gin.Context) {
-
-	// Get Node ID
-	nid, err := parseNID(c)
-	if err != nil {
-		log.Log.WithError(err).Warn("Error Getting Node ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Check if is a node access
-	isNode, isNodeExists := c.Get("isNode")
-	if isNodeExists {
-		if isNode.(bool) {
-			if nid != c.MustGet("nodeID").(uint64) {
-				log.Log.WithField("nodeID", c.MustGet("nodeID").(uint64)).Warn("Node Not Authorized")
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized"})
-				return
-			}
-		}
-	}
-
-	var node model.Node
-	node.ID = nid
-
-	if err := orm.DB.First(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Log.WithField("nodeID", nid).Warn("Node Not Found")
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	} else if err != nil {
-		log.Log.WithError(err).Error("Database Error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"node": node,
-	})
-	log.Log.Debug("Success")
-	return
-}
-
-// Update receive a id and a node object from request and update the specific record in DB
-func Update(c *gin.Context) {
-
-	// Check Admin
-	if isAdmin := c.MustGet("isAdmin").(bool); !isAdmin {
-		log.Log.WithFields(logrus.Fields{
-			"isAdmin": isAdmin,
-		}).Warning("Node Creation Failed")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only Admin Can Modify Node"})
-		return
-	}
-
-	nid, err := parseNID(c)
-	if err != nil {
-		log.Log.WithError(err).Warn("Error Getting Node ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	var node model.Node
-	node.ID = nid
-
-	// Bind Request
-	if err = c.ShouldBindJSON(&node); err != nil {
-		log.Log.WithError(err).Warn("Error Binding Request")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Save to DB
-	if err = orm.DB.Save(&node).Error; err != nil {
-		log.Log.WithError(err).Error("Database Error")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"node": node,
-	})
-	log.Log.Debug("Success")
-	return
-}
-
-// Destroy receive a id from request and delete in from DB
-func Destroy(c *gin.Context) {
-
-	// Check Admin
-	if isAdmin := c.MustGet("isAdmin").(bool); !isAdmin {
-		log.Log.WithFields(logrus.Fields{
-			"isAdmin": isAdmin,
-		}).Warning("Node Creation Failed")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only Admin Can Delete Node"})
-		return
-	}
-
-	nid, err := parseNID(c)
-	if err != nil {
-		log.Log.WithError(err).Warn("Error Getting Node ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	var node model.Node
-	node.ID = nid
-
-	if err = orm.DB.Delete(&node).Error; err != nil {
-		log.Log.WithError(err).Error("Database Error")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"node": "",
-	})
-	log.Log.Debug("Success")
 	return
 }
 
