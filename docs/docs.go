@@ -1188,7 +1188,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/users.updateRequest"
                         }
                     },
                     {
@@ -1370,6 +1370,65 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/users/{username}/traffic": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update user traffic",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Traffic user",
+                "operationId": "users.Traffic",
+                "parameters": [
+                    {
+                        "description": "User Object",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users.trafficRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Node Token",
+                        "name": "Authorization",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/users.userResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1436,7 +1495,7 @@ var doc = `{
         "groups.usersResponse": {
             "type": "object",
             "properties": {
-                "users": {
+                "user": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.User"
@@ -1748,7 +1807,41 @@ var doc = `{
                 }
             }
         },
+        "users.trafficRequest": {
+            "type": "object",
+            "properties": {
+                "current_traffic": {
+                    "type": "integer"
+                },
+                "max_traffic": {
+                    "type": "integer"
+                }
+            }
+        },
+        "users.updateRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "subscription_token": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
         "users.updateResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.User"
+                }
+            }
+        },
+        "users.userResponse": {
             "type": "object",
             "properties": {
                 "user": {

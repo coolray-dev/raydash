@@ -41,7 +41,7 @@ definitions:
     type: object
   groups.usersResponse:
     properties:
-      users:
+      user:
         items:
           $ref: '#/definitions/models.User'
         type: array
@@ -244,7 +244,29 @@ definitions:
         $ref: '#/definitions/models.User'
         type: object
     type: object
+  users.trafficRequest:
+    properties:
+      current_traffic:
+        type: integer
+      max_traffic:
+        type: integer
+    type: object
+  users.updateRequest:
+    properties:
+      email:
+        type: string
+      subscription_token:
+        type: string
+      uuid:
+        type: string
+    type: object
   users.updateResponse:
+    properties:
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+    type: object
+  users.userResponse:
     properties:
       user:
         $ref: '#/definitions/models.User'
@@ -1009,7 +1031,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/users.updateRequest'
       - description: Username
         in: path
         name: username
@@ -1129,6 +1151,44 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List all services
+      tags:
+      - Users
+  /users/{username}/traffic:
+    patch:
+      consumes:
+      - application/json
+      description: Update user traffic
+      operationId: users.Traffic
+      parameters:
+      - description: User Object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.trafficRequest'
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Node Token
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.userResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Traffic user
       tags:
       - Users
 securityDefinitions:

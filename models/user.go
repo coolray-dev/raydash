@@ -17,7 +17,7 @@ type User struct {
 	Token             map[string]time.Time `json:"-" gorm:"-" fake:"skip"`            // gorm doesn't support complex type so hav to marshal it
 	TokenStr          string               `json:"-" gorm:"column:token" fake:"skip"` // the actual data is stored here
 	JwtKey            []byte               `json:"-" fake:"skip"`                     // Do not export it due to leak risk
-	Email             string               `json:"email" fake:"{email}"`
+	Email             string               `gorm:"unique" json:"email" fake:"{email}"`
 	Username          string               `gorm:"unique" json:"username" fake:"{username}"`
 	Password          string               `json:"-" fake:"{password:true,true,true,true,true,8}"`
 	SubscriptionToken string               `json:"subscription_token"`
