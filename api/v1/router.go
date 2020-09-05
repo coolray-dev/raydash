@@ -77,6 +77,7 @@ func setupRoutes(router *gin.RouterGroup) {
 	{
 		servicesAPI.GET("", middleware.ParseParams(), services.Index)
 		servicesAPI.POST("", services.Store)
+		servicesAPI.GET("/:sid", services.Show)
 		servicesAPI.PATCH("/:sid", services.Update)
 		servicesAPI.DELETE("/:sid", services.Destroy)
 	}
