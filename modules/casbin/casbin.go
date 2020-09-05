@@ -42,12 +42,12 @@ func init() {
 
 func addPolicies() {
 	basicRules := [][]string{
-		[]string{"group::admin", "/*", ".*"},
-		[]string{"role::anonymous", "/*/swagger/.*", ".*"},
-		[]string{"role::anonymous", "/*/login", "POST"},
-		[]string{"role::anonymous", "/*/register", "POST"},
-		[]string{"role::anonymous", "/*/refresh", "POST"},
-		[]string{"role::anonymous", "/*/password/.*", "POST"},
+		{"group::admin", "/*", ".*"},
+		{"role::anonymous", "/*/swagger/.*", ".*"},
+		{"role::anonymous", "/*/login", "POST"},
+		{"role::anonymous", "/*/register", "POST"},
+		{"role::anonymous", "/*/refresh", "POST"},
+		{"role::anonymous", "/*/password/.*", "POST"},
 	}
 	Enforcer.AddPolicies(basicRules)
 
@@ -95,4 +95,17 @@ func AddDefaultUserPolicy(u *models.User) {
 	Enforcer.AddPolicy(u.Username, "/*/users/"+u.Username+"$", ".*")
 	Enforcer.AddPolicy(u.Username, "/*/users/"+u.Username+"/(groups|services|nodes)$", "GET")
 	Enforcer.AddPolicy(u.Username, "/*/nodes$", "GET")
+
+	// Add policy for owned services
+	var services []models.Service
+	if err := database.DB.
+		Where("uid = ?", u.ID).Find(&services).Error; err != nil {
+		log.Log.WithError(err).Error()
+	}
+
+	for _, s := range services {
+		Enforcer.AddPolicy(u.Username,
+			"/*/users/"+u.Username+"/services/"+strconv.Itoa(int(s.ID)),
+			".*")
+	}
 }
