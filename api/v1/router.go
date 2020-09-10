@@ -102,7 +102,7 @@ func setupRoutes(router *gin.RouterGroup) {
 	announcementsAPI := router.Group("/announcements")
 	{
 		announcementsAPI.GET("", middleware.ParseParams(), announcements.Index)
-		announcementsAPI.POST("", announcements.Store)
+		announcementsAPI.POST("", announcements.Create)
 		announcementsAPI.GET("/:aid", announcements.Show)
 		announcementsAPI.PATCH("/:aid", announcements.Update)
 		announcementsAPI.DELETE("/:aid", announcements.Destroy)

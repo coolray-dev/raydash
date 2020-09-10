@@ -9,11 +9,31 @@ import (
 	"gorm.io/gorm"
 
 	orm "github.com/coolray-dev/raydash/database"
+	"github.com/coolray-dev/raydash/models"
 	model "github.com/coolray-dev/raydash/models"
 	"github.com/gin-gonic/gin"
 )
 
+type indexResponse struct {
+	Total         uint64                `json:"total"`
+	Announcements []models.Announcement `json:"announcements"`
+}
+
 // Index gets all anns and return to http in json
+//
+// Index godoc
+// @Summary All Announcements
+// @Description Simply list out all announcements
+// @ID announcements.Index
+// @Security ApiKeyAuth
+// @Tags Groups
+// @Accept  json
+// @Produce  json
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} indexResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /announcements [get]
 func Index(c *gin.Context) {
 	var anns []model.Announcement
 	query := orm.DB
@@ -42,15 +62,34 @@ func Index(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"total":         len(anns),
-		"announcements": anns,
+	c.JSON(http.StatusOK, indexResponse{
+		Total:         uint64(len(anns)),
+		Announcements: anns,
 	})
 	return
 }
 
-// Store parse a ann from request and create a new record in DB
-func Store(c *gin.Context) {
+type createResponse struct {
+	Announcement models.Announcement `json:"announcements"`
+}
+
+// Create parse a ann from request and create a new record in DB
+//
+// Create godoc
+// @Summary Create Announcement
+// @Description Create an announcement from post json object
+// @ID Announcements.Create
+// @Security ApiKeyAuth
+// @Tags Announcements
+// @Accept  json
+// @Produce  json
+// @Param ann body models.Announcement true "Announcement Object"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} createResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /announcements [post]
+func Create(c *gin.Context) {
 	type Request struct {
 		Content string `binding:"required"`
 		Level   string `binding:"required"`
