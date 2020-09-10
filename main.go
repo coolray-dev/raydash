@@ -48,7 +48,7 @@ func main() {
 
 	// init mail
 	// Do not use Config.Sub("mail") and Unmarshal
-	// Config.Sub do check RAYDASH_MAIL, which is not expected
+	// Config.Sub does not check RAYDASH_MAIL, which is not expected
 	var mailCfg *models.MailConfig = &models.MailConfig{
 		Host:          setting.Config.GetString("mail.host"),
 		Port:          setting.Config.GetInt("mail.port"),

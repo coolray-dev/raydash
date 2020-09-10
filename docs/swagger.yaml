@@ -1,5 +1,20 @@
 basePath: /v1
 definitions:
+  announcements.createResponse:
+    properties:
+      announcements:
+        $ref: '#/definitions/models.Announcement'
+        type: object
+    type: object
+  announcements.indexResponse:
+    properties:
+      announcements:
+        items:
+          $ref: '#/definitions/models.Announcement'
+        type: array
+      total:
+        type: integer
+    type: object
   groups.createResponse:
     properties:
       group:
@@ -49,6 +64,21 @@ definitions:
   handler.ErrorResponse:
     properties:
       error:
+        type: string
+    type: object
+  models.Announcement:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      level:
+        type: string
+      title:
+        type: string
+      updated_at:
         type: string
     type: object
   models.Group:
@@ -295,6 +325,75 @@ info:
   title: RayDash API
   version: 1.0.0
 paths:
+  /announcements:
+    get:
+      consumes:
+      - application/json
+      description: Simply list out all announcements
+      operationId: announcements.Index
+      parameters:
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/announcements.indexResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: All Announcements
+      tags:
+      - Groups
+    post:
+      consumes:
+      - application/json
+      description: Create an announcement from post json object
+      operationId: Announcements.Create
+      parameters:
+      - description: Announcement Object
+        in: body
+        name: ann
+        required: true
+        schema:
+          $ref: '#/definitions/models.Announcement'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/announcements.createResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Announcement
+      tags:
+      - Announcements
   /groups:
     get:
       consumes:
