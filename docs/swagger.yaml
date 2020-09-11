@@ -1,10 +1,28 @@
 basePath: /v1
 definitions:
-  announcements.createResponse:
+  announcements.annRequest:
     properties:
-      announcements:
+      content:
+        type: string
+      level:
+        type: string
+      title:
+        type: string
+    required:
+    - content
+    - level
+    - title
+    type: object
+  announcements.annResponse:
+    properties:
+      announcement:
         $ref: '#/definitions/models.Announcement'
         type: object
+    type: object
+  announcements.destroyResponse:
+    properties:
+      announcement:
+        type: string
     type: object
   announcements.indexResponse:
     properties:
@@ -330,7 +348,7 @@ paths:
       consumes:
       - application/json
       description: Simply list out all announcements
-      operationId: announcements.Index
+      operationId: Announcements.Index
       parameters:
       - description: Access Token
         in: header
@@ -356,7 +374,7 @@ paths:
       - ApiKeyAuth: []
       summary: All Announcements
       tags:
-      - Groups
+      - Announcements
     post:
       consumes:
       - application/json
@@ -365,10 +383,10 @@ paths:
       parameters:
       - description: Announcement Object
         in: body
-        name: ann
+        name: Annoucement
         required: true
         schema:
-          $ref: '#/definitions/models.Announcement'
+          $ref: '#/definitions/announcements.annRequest'
       - description: Access Token
         in: header
         name: Authorization
@@ -380,7 +398,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/announcements.createResponse'
+            $ref: '#/definitions/announcements.annResponse'
         "403":
           description: Forbidden
           schema:
@@ -392,6 +410,121 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create Announcement
+      tags:
+      - Announcements
+  /announcements/{aid}:
+    delete:
+      consumes:
+      - application/json
+      description: Destroy an announcement according to nid
+      operationId: Announcements.Destroy
+      parameters:
+      - description: Announcement ID
+        in: path
+        name: aid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/announcements.destroyResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Destroy Announcement
+      tags:
+      - Announcements
+    get:
+      consumes:
+      - application/json
+      description: Show a announcement according to id
+      operationId: Announcements.Show
+      parameters:
+      - description: Announcement ID
+        in: path
+        name: aid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/announcements.annResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Show Announcements
+      tags:
+      - Announcements
+    patch:
+      consumes:
+      - application/json
+      description: Update a announcement
+      operationId: Announcements.Update
+      parameters:
+      - description: Announcement ID
+        in: path
+        name: aid
+        required: true
+        type: integer
+      - description: Announcement Object
+        in: body
+        name: Announcement
+        required: true
+        schema:
+          $ref: '#/definitions/announcements.annRequest'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/announcements.annResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Announcement
       tags:
       - Announcements
   /groups:
