@@ -24,9 +24,9 @@ type indexResponse struct {
 // Index godoc
 // @Summary All Announcements
 // @Description Simply list out all announcements
-// @ID announcements.Index
+// @ID Announcements.Index
 // @Security ApiKeyAuth
-// @Tags Groups
+// @Tags Announcements
 // @Accept  json
 // @Produce  json
 // @Param Authorization header string true "Access Token"
@@ -69,10 +69,6 @@ func Index(c *gin.Context) {
 	return
 }
 
-type createResponse struct {
-	Announcement models.Announcement `json:"announcements"`
-}
-
 // Create parse a ann from request and create a new record in DB
 //
 // Create godoc
@@ -83,20 +79,15 @@ type createResponse struct {
 // @Tags Announcements
 // @Accept  json
 // @Produce  json
-// @Param ann body models.Announcement true "Announcement Object"
+// @Param Annoucement body annRequest true "Announcement Object"
 // @Param Authorization header string true "Access Token"
-// @Success 200 {object} createResponse
+// @Success 200 {object} annResponse
 // @Failure 403 {object} handler.ErrorResponse
 // @Failure 500 {object} handler.ErrorResponse
 // @Router /announcements [post]
 func Create(c *gin.Context) {
-	type Request struct {
-		Content string `binding:"required"`
-		Level   string `binding:"required"`
-		Title   string `binding:"required"`
-	}
 
-	var json Request
+	var json annRequest
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -118,7 +109,26 @@ func Create(c *gin.Context) {
 
 }
 
+type annResponse struct {
+	Announcement models.Announcement `json:"announcement"`
+}
+
 // Show receive a id from request and find the ann of the specific id
+//
+// Show godoc
+// @Summary Show Announcements
+// @Description Show a announcement according to id
+// @ID Announcements.Show
+// @Security ApiKeyAuth
+// @Tags Announcements
+// @Accept  json
+// @Produce  json
+// @Param aid path uint true "Announcement ID"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} annResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /announcements/{aid} [get]
 func Show(c *gin.Context) {
 	aid, err := parseAID(c)
 	if err != nil {
@@ -137,26 +147,44 @@ func Show(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"announcement": ann,
+	c.JSON(http.StatusOK, annResponse{
+		Announcement: ann,
 	})
 	return
 
 }
 
+type annRequest struct {
+	Content string `binding:"required"`
+	Level   string `binding:"required"`
+	Title   string `binding:"required"`
+}
+
 // Update receive a id and a ann from request and update the specific record in DB
+//
+// Update godoc
+// @Summary Update Announcement
+// @Description Update a announcement
+// @ID Announcements.Update
+// @Security ApiKeyAuth
+// @Tags Announcements
+// @Accept  json
+// @Produce  json
+// @Param aid path uint true "Announcement ID"
+// @Param Announcement body annRequest true "Announcement Object"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} annResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /announcements/{aid} [patch]
 func Update(c *gin.Context) {
 	aid, err := parseAID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	type Request struct {
-		Content string `binding:"required"`
-		Level   string `binding:"required"`
-		Title   string `binding:"required"`
-	}
-	var json Request
+
+	var json annRequest
 	if err = c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -183,13 +211,32 @@ func Update(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"announcement": ann,
+	c.JSON(http.StatusOK, annResponse{
+		Announcement: ann,
 	})
 	return
 }
 
+type destroyResponse struct {
+	Announcement string `json:"announcement"`
+}
+
 // Destroy receive a id from request and delete in from DB
+//
+// Destroy godoc
+// @Summary Destroy Announcement
+// @Description Destroy an announcement according to nid
+// @ID Announcements.Destroy
+// @Security ApiKeyAuth
+// @Tags Announcements
+// @Accept  json
+// @Produce  json
+// @Param aid path uint true "Announcement ID"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} destroyResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /announcements/{aid} [delete]
 func Destroy(c *gin.Context) {
 	aid, err := parseAID(c)
 	if err != nil {
@@ -205,8 +252,8 @@ func Destroy(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"announcement": "",
+	c.JSON(http.StatusOK, destroyResponse{
+		Announcement: "",
 	})
 	return
 }
