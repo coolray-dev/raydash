@@ -28,7 +28,6 @@ require (
 	github.com/magefile/mage v1.10.0 // indirect
 	github.com/magiconair/properties v1.8.2 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
-	github.com/mattn/go-sqlite3 v1.14.3 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect
@@ -56,7 +55,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	gorm.io/driver/mysql v1.0.1 // indirect
 	gorm.io/driver/postgres v1.0.0 // indirect
-	gorm.io/driver/sqlite v1.1.2
+	gorm.io/driver/sqlite v1.1.3
 	gorm.io/driver/sqlserver v1.0.4 // indirect
 	gorm.io/gorm v1.20.1
 )
