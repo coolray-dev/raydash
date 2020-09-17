@@ -175,6 +175,8 @@ definitions:
       uuid:
         type: string
     type: object
+  models.ShadowsocksSetting:
+    type: object
   models.User:
     properties:
       created_at:
@@ -194,6 +196,11 @@ definitions:
       username:
         type: string
       uuid:
+        type: string
+    type: object
+  models.VmessSetting:
+    properties:
+      protocol:
         type: string
     type: object
   nodes.accessTokenResponse:
@@ -269,11 +276,46 @@ definitions:
       service:
         type: string
     type: object
+  services.indexResponse:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+      total:
+        type: integer
+    type: object
   services.serviceResponse:
     properties:
       service:
         $ref: '#/definitions/models.Service'
         type: object
+    type: object
+  services.storeRequest:
+    properties:
+      description:
+        type: string
+      host:
+        type: string
+      name:
+        type: string
+      nid:
+        type: integer
+      port:
+        type: integer
+      protocol:
+        type: string
+      shadowsocksSettings:
+        $ref: '#/definitions/models.ShadowsocksSetting'
+        type: object
+      uid:
+        type: integer
+      vmessSettings:
+        $ref: '#/definitions/models.VmessSetting'
+        type: object
+    required:
+    - nid
+    - uid
     type: object
   users.destroyResponse:
     properties:
@@ -1217,6 +1259,75 @@ paths:
       summary: Update user traffic
       tags:
       - Nodes
+  /services:
+    get:
+      consumes:
+      - application/json
+      description: Simply list out all Services
+      operationId: Services.Index
+      parameters:
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.indexResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: All Services
+      tags:
+      - Services
+    post:
+      consumes:
+      - application/json
+      description: Create a service from post json object
+      operationId: Services.Store
+      parameters:
+      - description: Service Object
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/services.storeRequest'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.serviceResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Service
+      tags:
+      - Services
   /services/{nid}:
     get:
       consumes:
@@ -1252,6 +1363,48 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Show Service
+      tags:
+      - Services
+    patch:
+      consumes:
+      - application/json
+      description: Update a Service
+      operationId: Services.Update
+      parameters:
+      - description: Service ID
+        in: path
+        name: sid
+        required: true
+        type: integer
+      - description: Service Object
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/models.Service'
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.serviceResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Service
       tags:
       - Services
   /services/{sid}:

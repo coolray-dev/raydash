@@ -5,22 +5,41 @@ import (
 	"net/http"
 
 	orm "github.com/coolray-dev/raydash/database"
-	model "github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
-//Index list out all services and return
+type indexResponse struct {
+	Total    uint
+	Services []models.Service `json:"services"`
+}
+
+// Index list out all services and return
+//
+// Index godoc
+// @Summary All Services
+// @Description Simply list out all Services
+// @ID Services.Index
+// @Security ApiKeyAuth
+// @Tags Services
+// @Accept  json
+// @Produce  json
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} indexResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /services [get]
 func Index(c *gin.Context) {
-	var services []model.Service
+	var services []models.Service
 	uid, uexists := c.Get("uid")
 	nid, nexists := c.Get("nid")
 	switch {
 	case uexists:
 		{
-			var user model.User
+			var user models.User
 			user.ID = uid.(uint64)
 			if err := orm.DB.Model(&user).Association("Services").Find(&services); errors.Is(err, gorm.ErrRecordNotFound) {
 				log.Log.WithFields(logrus.Fields{
@@ -38,7 +57,7 @@ func Index(c *gin.Context) {
 		}
 	case nexists:
 		{
-			var node model.Node
+			var node models.Node
 			node.ID = nid.(uint64)
 			if err := orm.DB.Model(&node).Association("Services").Find(&services); errors.Is(err, gorm.ErrRecordNotFound) {
 				log.Log.WithFields(logrus.Fields{
@@ -71,7 +90,7 @@ func Index(c *gin.Context) {
 	}
 
 	for i, s := range services {
-		var node model.Node
+		var node models.Node
 		if err := orm.DB.Where("id = ?", s.NodeID).Find(&node).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Log.WithFields(logrus.Fields{
 				"nid": s.NodeID,
@@ -86,7 +105,7 @@ func Index(c *gin.Context) {
 		} else if node.HasMultiPort {
 
 		} else {
-			var user model.User
+			var user models.User
 			if err2 := orm.DB.Where("id = ?", s.UserID).Find(&user).Error; errors.Is(err2, gorm.ErrRecordNotFound) {
 				log.Log.WithFields(logrus.Fields{
 					"uid": s.UserID,
@@ -103,7 +122,7 @@ func Index(c *gin.Context) {
 			services[i].Host = node.Host
 			services[i].Port = node.Settings.Port
 			services[i].VmessSetting = node.Settings.VmessSetting
-			services[i].VmessUser = model.VmessUser{
+			services[i].VmessUser = models.VmessUser{
 				Email:    user.Email,
 				UUID:     user.UUID,
 				AlterID:  64,
