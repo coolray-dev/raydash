@@ -55,7 +55,7 @@ require (
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
-	gorm.io/driver/mysql v1.0.1 // indirect
+	gorm.io/driver/mysql v1.0.1
 	gorm.io/driver/postgres v1.0.0 // indirect
 	gorm.io/driver/sqlite v1.1.3
 	gorm.io/driver/sqlserver v1.0.4 // indirect
