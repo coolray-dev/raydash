@@ -264,6 +264,17 @@ definitions:
           $ref: '#/definitions/models.User'
         type: array
     type: object
+  services.destroyResponse:
+    properties:
+      service:
+        type: string
+    type: object
+  services.serviceResponse:
+    properties:
+      service:
+        $ref: '#/definitions/models.Service'
+        type: object
+    type: object
   users.destroyResponse:
     properties:
       user:
@@ -1206,6 +1217,80 @@ paths:
       summary: Update user traffic
       tags:
       - Nodes
+  /services/{nid}:
+    get:
+      consumes:
+      - application/json
+      description: Show a service according to nid
+      operationId: Services.Show
+      parameters:
+      - description: Services ID
+        in: path
+        name: nid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.serviceResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Show Service
+      tags:
+      - Services
+  /services/{sid}:
+    delete:
+      consumes:
+      - application/json
+      description: Destroy a service according to sid
+      operationId: Services.Destroy
+      parameters:
+      - description: Service ID
+        in: path
+        name: sid
+        required: true
+        type: integer
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.destroyResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Destroy Service
+      tags:
+      - Services
   /users:
     get:
       consumes:

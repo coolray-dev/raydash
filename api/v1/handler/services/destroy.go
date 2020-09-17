@@ -4,23 +4,40 @@ import (
 	"net/http"
 
 	orm "github.com/coolray-dev/raydash/database"
-	model "github.com/coolray-dev/raydash/models"
+	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
+type destroyResponse struct {
+	Service string `json:"service"`
+}
+
 // Destroy delete a service from db
+//
+// Destroy godoc
+// @Summary Destroy Service
+// @Description Destroy a service according to sid
+// @ID Services.Destroy
+// @Security ApiKeyAuth
+// @Tags Services
+// @Accept  json
+// @Produce  json
+// @Param sid path uint true "Service ID"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} destroyResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /services/{sid} [delete]
 func Destroy(c *gin.Context) {
 	sid, err := parseSID(c)
 	if err != nil {
-		log.Log.WithFields(logrus.Fields{
-			"error": err.Error(),
-		}).Error("URL Param Invalid")
+		log.Log.WithError(err).Error("URL Param Invalid")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var service model.Service
+	var service models.Service
 	service.ID = sid
 
 	if err = orm.DB.Delete(&service).Error; err != nil {
@@ -33,7 +50,7 @@ func Destroy(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"node": "",
+		"service": "",
 	})
 	return
 }

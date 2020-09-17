@@ -11,10 +11,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type showResponse struct {
-	Service models.Service `json:"service"`
-}
-
+// Show a Service
+//
+// Show godoc
+// @Summary Show Service
+// @Description Show a service according to nid
+// @ID Services.Show
+// @Security ApiKeyAuth
+// @Tags Services
+// @Accept  json
+// @Produce  json
+// @Param nid path uint true "Services ID"
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} serviceResponse
+// @Failure 403 {object} handler.ErrorResponse
+// @Failure 500 {object} handler.ErrorResponse
+// @Router /services/{nid} [get]
 func Show(c *gin.Context) {
 	sid, err := parseSID(c)
 
@@ -37,7 +49,7 @@ func Show(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, showResponse{
+	c.JSON(http.StatusOK, serviceResponse{
 		Service: service,
 	})
 }
