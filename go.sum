@@ -77,6 +77,8 @@ github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWo
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/gbrlsnchs/jwt/v3 v3.0.0-rc.2 h1:3t7jvTkeQfk1FdP0noXSNiM6AdBokLz7QmZDmnCHAAA=
 github.com/gbrlsnchs/jwt/v3 v3.0.0-rc.2/go.mod h1:AncDcjXz18xetI3A6STfXq2w+LuTx8pQ8bGEwRN8zVM=
+github.com/gbrlsnchs/jwt/v3 v3.0.0 h1:gtPjdT3gAbBLjVckJsgNf+a46sqrCBfRebg2r/NysIo=
+github.com/gbrlsnchs/jwt/v3 v3.0.0/go.mod h1:AncDcjXz18xetI3A6STfXq2w+LuTx8pQ8bGEwRN8zVM=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gin-contrib/cors v1.3.1 h1:doAsuITavI4IOcd0Y19U4B+O0dNWihRyX//nn4sEmgA=

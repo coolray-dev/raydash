@@ -9,7 +9,7 @@ require (
 	github.com/casbin/gorm-adapter/v3 v3.0.2
 	github.com/denisenkom/go-mssqldb v0.0.0-20200910202707-1e08a3fab204 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gbrlsnchs/jwt/v3 v3.0.0-rc.2
+	github.com/gbrlsnchs/jwt/v3 v3.0.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.2 // indirect
 	github.com/gin-gonic/gin v1.6.3
