@@ -8,6 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Unified Service Object
+type serviceRequest struct {
+	Name        string                    `json:"name" `
+	Description string                    `json:"description"`
+	Host        string                    `json:"host"`
+	Port        uint                      `json:"port"`
+	Protocol    string                    `json:"protocol"`
+	NID         uint64                    `json:"nid" binding:"required"`
+	UID         uint64                    `json:"uid" binding:"required"`
+	VS          models.VmessSetting       `json:"vmessSettings"`
+	SS          models.ShadowsocksSetting `json:"shadowsocksSettings"`
+}
+
+// Unified response for only one service
 type serviceResponse struct {
 	Service models.Service `json:"service"`
 }

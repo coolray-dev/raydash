@@ -13,17 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type storeRequest struct {
-	Name        string                    `json:"name" `
-	Description string                    `json:"description"`
-	Host        string                    `json:"host"`
-	Port        uint                      `json:"port"`
-	Protocol    string                    `json:"protocol"`
-	NID         uint64                    `json:"nid" binding:"required"`
-	UID         uint64                    `json:"uid" binding:"required"`
-	VS          models.VmessSetting       `json:"vmessSettings"`
-	SS          models.ShadowsocksSetting `json:"shadowsocksSettings"`
-}
 
 // Store recieve a service object and store it in DB
 //
@@ -35,7 +24,7 @@ type storeRequest struct {
 // @Tags Services
 // @Accept  json
 // @Produce  json
-// @Param service body storeRequest true "Service Object"
+// @Param service body serviceRequest true "Service Object"
 // @Param Authorization header string true "Access Token"
 // @Success 200 {object} serviceResponse
 // @Failure 403 {object} handler.ErrorResponse
@@ -43,7 +32,7 @@ type storeRequest struct {
 // @Router /services [post]
 func Store(c *gin.Context) {
 
-	var json storeRequest
+	var json serviceRequest
 	if err := c.ShouldBindJSON(&json); err != nil {
 		log.Log.Error("Request Binding Error")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

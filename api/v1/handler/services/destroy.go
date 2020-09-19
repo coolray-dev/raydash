@@ -7,7 +7,6 @@ import (
 	"github.com/coolray-dev/raydash/models"
 	"github.com/coolray-dev/raydash/modules/log"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type destroyResponse struct {
@@ -37,13 +36,9 @@ func Destroy(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var service models.Service
-	service.ID = sid
 
-	if err = orm.DB.Delete(&service).Error; err != nil {
-		log.Log.WithFields(logrus.Fields{
-			"error": err.Error(),
-		}).Error("Database Error")
+	if err = orm.DB.Delete(&models.Service{}, sid).Error; err != nil {
+		log.Log.WithError(err).Error("Database Error")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})

@@ -21,7 +21,7 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param sid path uint true "Service ID"
-// @Param service body models.Service true "Service Object"
+// @Param service body serviceRequest true "Service Object"
 // @Param Authorization header string true "Access Token"
 // @Success 200 {object} serviceResponse
 // @Failure 403 {object} handler.ErrorResponse
