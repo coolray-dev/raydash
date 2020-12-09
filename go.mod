@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-	github.com/brianvoe/gofakeit/v5 v5.9.3
+	github.com/brianvoe/gofakeit/v5 v5.11.1
 	github.com/casbin/casbin/v2 v2.13.1
 	github.com/casbin/gorm-adapter/v3 v3.0.3
 	github.com/denisenkom/go-mssqldb v0.0.0-20200910202707-1e08a3fab204 // indirect
